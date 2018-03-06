@@ -57,7 +57,7 @@ var Game = new function() {
 
   // Handle Input
   //var KEY_CODES = { 37:'left', 39:'right', 32 :'fire' }; las originales del AlienInvasion
-  var KEY_CODES = { 38:'up', 40:'down', 32 :'espacio' };
+  var KEY_CODES = { 38:'up', 40:'down', 32 :'space' };
   //Arriba (38), Abajo (40) y Espacio (32)
   this.keys = {};
 

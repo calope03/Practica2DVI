@@ -6,7 +6,7 @@ var sprites = {
  ParedIzda: {
     sx: 0,
     sy: 0,
-    w: 512,
+    w: 132,
     h: 480,
     frames: 1
   },
@@ -17,6 +17,7 @@ var sprites = {
     h: 480,
     frames: 1
   }
+
 
 };
 
@@ -124,6 +125,10 @@ var playGame = function() {
   Game.setBoard(0,board);
   board.add(new Player());
   Game.setBoard(1,board);
+  board.add(new Beer(325, 100));
+  Game.setBoard(1,board);
+  //board.add(new EscenarioFondo2());
+  //Game.setBoard(0,board);
   /* para ver mejor lo que hace setboard
     this.setBoard = function(num,board) { 
       boards[num] = board; 
@@ -158,6 +163,20 @@ EscenarioFondo.prototype.draw = function(ctx) {
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------
+
+/*var EscenarioFondo2 = function(){
+  this.setup('ParedIzda', {}); //setup(sprite, props)
+  this.step = function(dt) { };
+}//EscenarioFondo
+
+EscenarioFondo.prototype = new Sprite();
+
+EscenarioFondo.prototype.draw = function(ctx) { 
+  SpriteSheet.draw(Game.ctx,"ParedIzda",0,0);
+}*/
+
+//---------------------------------------------------------------------------------------------------------------------------------
+
 
 var Player = function(){
 
@@ -214,6 +233,15 @@ var Player = function(){
 
       Game.keys['down'] = false;
     }
+    else if(Game.keys['space']){// && this.reload < 0) {
+      Game.keys['space'] = false;
+      this.reload = this.reloadTime;
+
+      console.log("hola");
+     // var nueva = Object.Create(Beer);
+      board.add(new Beer(325, 300));
+      Game.setBoard(1,board);
+    }
 
     this.reload-=dt;
     /*if(Game.keys['fire'] && this.reload < 0) {
@@ -233,6 +261,50 @@ Player.prototype = new Sprite();
 
 //---------------------------------------------------------------------------------------------------------------------------------
 
+var Beer = function(x, y){
+  /*
+  Hace que una cerveza llena se mueva de derecha a izquierda. 
+  Crea esta clase de modo que puedas iniciarla en distintas posiciones 
+  y que se mueva a distinta velocidad.
+  */
+
+  //el sprite necesita saber unas coordenadas donde dibujarse de primeras
+  this.x = x;
+  this.y = y;
+
+  this.setup('bebidallena', {vx: -30}); //setup(sprite, props)
+
+  this.step = function(dt){
+
+    this.x += this.vx * dt;
+    //console.log("this.x = " + this.x)
+    /*
+    var collision = this.board.collide(this,OBJECT_PLAYER)
+    if(collision) {
+      collision.hit(this.damage);
+      this.board.remove(this);
+    } else if(this.y > Game.height) {
+        this.board.remove(this); 
+    }*/
+
+    /*if(Game.keys['space']){// && this.reload < 0) {
+      Game.keys['space'] = false;
+      this.reload = this.reloadTime;
+
+      console.log("hola")
+      Beer.Create
+
+      //this.board.add(new PlayerMissile(this.x,this.y+this.h/2));
+      //this.board.add(new PlayerMissile(this.x+this.w,this.y+this.h/2));
+    }*/
+
+  }
+
+}//Beer
+
+Beer.prototype = new Sprite();
+
+//---------------------------------------------------------------------------------------------------------------------------------
 
 var Starfield = function(speed,opacity,numStars,clear) {
 
