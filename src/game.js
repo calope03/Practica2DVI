@@ -1,8 +1,12 @@
 var sprites = {
  camarero: { sx: 510, sy: 0, w: 55, h: 64, frames: 1 },
  cliente: { sx: 510, sy: 66, w: 32, h: 32, frames: 1 },
- bebidallena: { sx: 496, sy: 106, w: 11, h: 25, frames: 1 },
- bebidavacia: { sx: 496, sy: 138, w: 11, h: 25, frames: 1 },
+ cliente2: { sx: 512, sy: 164, w: 32, h: 32, frames: 1 },
+ cliente3: { sx: 512, sy: 197, w: 32, h: 32, frames: 1 },
+ cliente4: { sx: 512, sy: 230, w: 32, h: 32, frames: 1 },
+ bebidallena: { sx: 496, sy: 106, w: 12, h: 25, frames: 1 },
+ bebidavacia: { sx: 496, sy: 138, w: 12, h: 25, frames: 1 },
+ deadzone: { sx: 512, sy: 235, w: 5, h: 70, frames: 1 }, //coge un trozo de la imagen en el que no hay NADA, es un sprite "invisible"
  ParedIzda: {
     sx: 0,
     sy: 0,
@@ -93,9 +97,11 @@ var enemies = {
 
 var OBJECT_PLAYER = 1,
     OBJECT_PLAYER_PROJECTILE = 2,
-    OBJECT_ENEMY = 4,
-    OBJECT_ENEMY_PROJECTILE = 8,
+    OBJECT_DRINK = 4,
+    OBJECT_DEADZONE = 8,
     OBJECT_POWERUP = 16;
+
+var canvas;
 
 //---------------------------------------------------------------------------------------------------------------------------------
 
@@ -103,18 +109,41 @@ var startGame = function() {
   var ua = navigator.userAgent.toLowerCase();
 
   // Only 1 row of stars
+  /*
   if(ua.match(/android/)) {
     Game.setBoard(0,new Starfield(50,0.6,100,true));
   } else {
     Game.setBoard(0,new Starfield(20,0.4,100,true));
     Game.setBoard(1,new Starfield(50,0.6,100));
     Game.setBoard(2,new Starfield(100,1.0,50));
-  }  
-  Game.setBoard(3,new TitleScreen("Alien Invasion", 
-                                  "Press fire to start playing",
+  }*/  
+  Game.setBoard(0,new TitleScreen("Mini Tapper", 
+                                  "Pulsa la barra espaciadora para empezar",
                                   playGame));
 };
 
+var numeroAleatorio = function(min, max){
+  return Math.floor(Math.random() * (max-min+1)) + min;
+}
+
+var generaDeadzones = function(board){
+
+  //console.log("hola")
+  var posicionesDeadzoneIzq = [{x:110, y:50}, {x:80, y:160}, {x: 50, y: 250}, {x: 18, y: 350}];
+  var posicionesDeadzoneDer = [{x:335, y:60}, {x:365, y:160}, {x: 395, y: 260}, {x: 430, y: 350}];
+
+  for(var i = 0; i < posicionesDeadzoneIzq.length; i++){
+    board.add(new DeadZone(posicionesDeadzoneIzq[i].x, posicionesDeadzoneIzq[i].y));
+    //console.log("hola")
+  }
+
+  for(var i = 0; i < posicionesDeadzoneDer.length; i++){
+    board.add(new DeadZone(posicionesDeadzoneDer[i].x, posicionesDeadzoneDer[i].y));
+  }
+
+  //board.add(new DeadZone(posicionesDeadzoneDer[0].x, posicionesDeadzoneDer[0].y));
+  Game.setBoard(1, board);
+}
 
 var playGame = function() {
   var board = new GameBoard();
@@ -125,8 +154,20 @@ var playGame = function() {
   Game.setBoard(0,board);
   board.add(new Player());
   Game.setBoard(1,board);
-  board.add(new Beer(325, 100));
+  board.add(new Beer(310, 95, 60, true));
   Game.setBoard(1,board);
+
+  var spritesClientes = ["cliente", "cliente2", "cliente3", "cliente4"];
+  var spriteClienteAleatorio = spritesClientes[numeroAleatorio(0, spritesClientes.length-1)];
+
+  var distintasVelocidades = [10, 20, 30, 40, 50, 60];
+  var velocidadAleatoria = distintasVelocidades[numeroAleatorio(0, distintasVelocidades.length-1)];
+
+  board.add(new Client(100, 90, velocidadAleatoria, spriteClienteAleatorio));
+  Game.setBoard(1,board);
+
+  generaDeadzones(board);
+
   //board.add(new EscenarioFondo2());
   //Game.setBoard(0,board);
   /* para ver mejor lo que hace setboard
@@ -174,6 +215,89 @@ EscenarioFondo.prototype = new Sprite();
 EscenarioFondo.prototype.draw = function(ctx) { 
   SpriteSheet.draw(Game.ctx,"ParedIzda",0,0);
 }*/
+
+//-----------------------------------------------------------------------------
+
+var Beer = function(x, y, vx, estadoBoolean){
+  /*
+  Hace que una cerveza llena se mueva de derecha a izquierda. 
+  Crea esta clase de modo que puedas iniciarla en distintas posiciones 
+  y que se mueva a distinta velocidad.
+  */
+
+  //el sprite necesita saber unas coordenadas donde dibujarse de primeras
+  this.x = x;
+  this.y = y;
+  this.llena = estadoBoolean;
+
+  if(this.llena){
+    this.setup('bebidallena'); //setup(sprite, props)
+    this.vx = vx*-1;
+  }else{
+    this.setup('bebidavacia');
+    this.vx = vx;
+  }
+  
+
+  this.step = function(dt){
+
+    this.x += this.vx * dt;
+
+    var collision = this.board.collide(this,OBJECT_DEADZONE);
+    if(collision) {
+      console.log("deadzone choca contra cerveza")
+      //collision.hit(this.damage); 
+      //esto borra la deadzone (lo que ha detectado que colisiona con cerveza)
+      //si la borrasemos tras la primera colision, las bebidas que no se eliminarian
+      //donde estaba antes ese deadzone
+      
+      this.board.remove(this); //y esto borraria la cerveza
+
+      //this.board.add(new Beer(this.x, this.y, 30, false));
+      //this.board.add(new Beer(collision.x, collision.y, 30, false));
+      //Game.setBoard(1, this.board);
+    }
+
+    if(this.llena){
+      /*
+        realmente el comportamiento que cambia estando llena o vacia
+        es el sprite y la direccion en la que se mueve.
+        La velocidad en principio es igual,
+        y esté llena o vacía, va a destruirse en cualquier deadzone.
+        Si tiene que realizar algun comportamiento puntual acorde a su estado,
+        este será el sitio para hacerlo.
+      */
+    }else{
+      
+    }
+
+    //console.log("this.x = " + this.x)
+    /*
+    var collision = this.board.collide(this,OBJECT_PLAYER)
+    if(collision) {
+      collision.hit(this.damage);
+      this.board.remove(this);
+    } else if(this.y > Game.height) {
+        this.board.remove(this); 
+    }*/
+
+    /*if(Game.keys['space']){// && this.reload < 0) {
+      Game.keys['space'] = false;
+      this.reload = this.reloadTime;
+
+      console.log("hola")
+      Beer.Create
+
+      //this.board.add(new PlayerMissile(this.x,this.y+this.h/2));
+      //this.board.add(new PlayerMissile(this.x+this.w,this.y+this.h/2));
+    }*/
+
+  }//step de Beer
+
+}//Beer
+
+Beer.prototype = new Sprite();
+Beer.prototype.type = OBJECT_DRINK;
 
 //---------------------------------------------------------------------------------------------------------------------------------
 
@@ -237,10 +361,43 @@ var Player = function(){
       Game.keys['space'] = false;
       this.reload = this.reloadTime;
 
-      console.log("hola");
-     // var nueva = Object.Create(Beer);
-      board.add(new Beer(325, 300));
-      Game.setBoard(1,board);
+      console.log("has pulsado espacio");
+      //var clonCerveza = Object.create(Beer);
+
+      //var clonCerveza = Object.create(Beer.prototype, { 'x':{value: 100}, 'y':{value:100}, 'vx':{value: -30}});
+      //var clonCerveza = Object.create(Beer.prototype);
+
+      this.board.add(new Beer(this.x-12, this.y+10, 70, true));
+      //this.board.add(clonCerveza);
+      Game.setBoard(1,this.board);
+
+
+      /*var bob = Object.create(userB, 
+                                  {
+                                    'id' : {
+                                      value: MY_GLOBAL.nextId(),
+                                      enumerable:true // writable:false, configurable(deletable):false by default
+                                    },
+                                    'name': {
+                                      value: 'Bob',
+                                      enumerable: true
+                                    }
+                                  }
+                            );*/
+
+    }
+
+    var collision = this.board.collide(this,OBJECT_DRINK);
+    if(collision) {
+      console.log("cerveza choca contra camarero") //para comprobar que la colision es correcta
+      collision.hit(this.damage); 
+      //esto borra la bebida (lo que ha detectado que colisiona con el camarero)
+      
+      //this.board.remove(this); //y esto borraria al camarero, pero no queremos eso!
+
+      //this.board.add(new Beer(this.x, this.y, 30, false));
+      //this.board.add(new Beer(collision.x, collision.y, 30, false));
+      //Game.setBoard(1, this.board);
     }
 
     this.reload-=dt;
@@ -261,51 +418,139 @@ Player.prototype = new Sprite();
 
 //---------------------------------------------------------------------------------------------------------------------------------
 
-var Beer = function(x, y){
+var DeadZone = function(x, y){
   /*
-  Hace que una cerveza llena se mueva de derecha a izquierda. 
-  Crea esta clase de modo que puedas iniciarla en distintas posiciones 
+    Esta clase representa un rectángulo o trigger 
+    que hace que clientes, jarras vacías y llenas sean destruidas 
+    al colisionar con él. Coloca una DeadZone a cada extremo de la barra 
+    y comprueba su funcionamiento. 
+
+    Para poder depurar te recomendamos que le implementes un método draw 
+    que dibuje un rectángulo usando 
+    las instrucciones primitivas del Canvas de HTML5. 
+
+    Al colocar las DeadZone tendrás que tener cuidado 
+    y comprobar que cuando el Player crea una cerveza, 
+    ésta no se destruye inmediatamente.
+  */
+
+  this.x = x;
+  this.y = y;
+
+  this.setup('deadzone'); //setup(sprite, props)
+
+  this.draw = function(dt){
+    //ESTO ES UNICAMENTE PARA DEPURAR
+    //Game.ctx.fillRect(this.x, this.y, 5, 70);
+
+  }
+
+  this.step = function(dt){
+
+  }
+
+}//DeadZone
+
+DeadZone.prototype = new Sprite();
+DeadZone.prototype.type = OBJECT_DEADZONE;
+
+//---------------------------------------------------------------------------------------------------------------------------------
+
+var Client = function(x, y, vx, nombreSprite){
+  /*
+  Hace que un cliente se mueva de izquierda a derecha. 
+  Al igual que la cerveza, crea esta clase de modo 
+  que puedas iniciarla en distintas posiciones, con distintos sprites (opcional)
   y que se mueva a distinta velocidad.
   */
 
   //el sprite necesita saber unas coordenadas donde dibujarse de primeras
   this.x = x;
   this.y = y;
+  this.vx = vx;
 
-  this.setup('bebidallena', {vx: -30}); //setup(sprite, props)
+  this.setup(nombreSprite); //setup(sprite, props)
 
   this.step = function(dt){
 
     this.x += this.vx * dt;
-    //console.log("this.x = " + this.x)
-    /*
-    var collision = this.board.collide(this,OBJECT_PLAYER)
+
+    var collision = this.board.collide(this,OBJECT_DRINK);
     if(collision) {
-      collision.hit(this.damage);
-      this.board.remove(this);
-    } else if(this.y > Game.height) {
+      collision.hit(this.damage); 
+      //esto borra la bebida (lo que ha detectado que colisiona con el cliente)
+      
+      this.board.remove(this); //y esto borra al cliente
+
+      //this.board.add(new Beer(this.x, this.y, 30, false));
+      this.board.add(new Beer(collision.x, collision.y, 30, false));
+      Game.setBoard(1, this.board);
+    } /*else if(this.y < -this.h) { 
         this.board.remove(this); 
-    }*/
-
-    /*if(Game.keys['space']){// && this.reload < 0) {
-      Game.keys['space'] = false;
-      this.reload = this.reloadTime;
-
-      console.log("hola")
-      Beer.Create
-
-      //this.board.add(new PlayerMissile(this.x,this.y+this.h/2));
-      //this.board.add(new PlayerMissile(this.x+this.w,this.y+this.h/2));
     }*/
 
   }
 
-}//Beer
+}//Client
 
-Beer.prototype = new Sprite();
+Client.prototype = new Sprite();
 
 //---------------------------------------------------------------------------------------------------------------------------------
 
+var Spawner = function(numClientes, tipo, frecuenciaCreacion, retardo){
+  /*
+  La clase Spawner contiene la lógica para crear clientes 
+  en una determinada barra del bar. 
+  Haz que este objeto se pueda configurar para que se generen 
+  un número concreto de clientes de un determinado tipo, 
+  a una frecuencia de creación fija y con un determinado retardo
+  con respecto a la creación del primer cliente
+  (para que no salgan clientes en todas las barras a la vez).
+  Para ello os recomendamos que utilicéis un patrón Prototype. 
+  El Spawner es inicializado con un objeto prototípico (un Cliente) 
+  que iremos clonando y añadiendo a la capa del juego con una determinada 
+  frecuencia. No debes usar el método setInterval para decidir 
+  cuándo clonar el objeto prototipo (Este motor no usa setInterval para implementar el bucle de juego sino un polyfill llamado requestAnimationFrame. Si usas el setTimeout entonces se producirán comportamientos extraños en la ejecución del bucle.) 
+  Si lo haces, verás que el juego se comporta de manera extraña 
+  si mandas la ventana del navegador a segundo plano.
+  */
+
+
+
+}//Spawner
+
+//Spawner.prototype = new Client();
+
+//--------------------------------------------------------------------------------------------------------------------------
+
+var GamaManager = new function(){
+  /*
+  Se encargará de comprobar el estado en el que se encuentra el juego 
+  y de decidir si hemos ganado o perdido.
+
+  El jugador gana si se cumplen estas dos condiciones:
+  • No quedan clientes a los que servir. El número de clientes es fijo para un nivel y se conoce a priori.
+  • No quedan jarras vacías que recoger.
+  El jugador pierde si se cumple alguna de estas condiciones:
+  • Algún cliente llega al extremo derecho de la barra.
+  • Alguna jarra vacía llega al extremo derecho de la barra.
+  • Alguna cerveza llena llega al extremo izquierdo de la barra.
+
+  El GameManager es el responsable de centralizar toda la información del juego y, por tanto, de decidir cuándo se termina (porque se ha ganado o se ha perdido):
+  • Los Spawners han de avisarle al principio del juego de cuántos clientes van a generar.
+  • Cada vez que generemos jarras vacías deberemos avisar al GameManager para que lleve la cuenta.
+  • Cada vez que sirvamos a un cliente deberemos avisar al GameManager para que sepa cuántos clientes lleva servidos.
+  • Cada vez que una jarra caiga o un cliente llegue al extremo de la barra deberemos avisar al GameManager.
+  
+  De momento solo haz que el GameManager muestre por consola si se ha ganado o se ha perdido. En la última sección lo implementaremos adecuadamente.
+
+  */
+
+
+
+}
+
+//----------------------------------------------------------------------------------------------------------------------------
 var Starfield = function(speed,opacity,numStars,clear) {
 
   // Set up the offscreen canvas
@@ -443,7 +688,7 @@ var Enemy = function(blueprint,override) {
 };
 
 Enemy.prototype = new Sprite();
-Enemy.prototype.type = OBJECT_ENEMY;
+Enemy.prototype.type = OBJECT_DRINK;
 
 Enemy.prototype.baseParameters = { A: 0, B: 0, C: 0, D: 0, 
                                    E: 0, F: 0, G: 0, H: 0,
@@ -504,7 +749,7 @@ var EnemyMissile = function(x,y) {
 };
 
 EnemyMissile.prototype = new Sprite();
-EnemyMissile.prototype.type = OBJECT_ENEMY_PROJECTILE;
+EnemyMissile.prototype.type = OBJECT_DEADZONE;
 
 EnemyMissile.prototype.step = function(dt)  {
   this.y += this.vy * dt;
@@ -537,7 +782,8 @@ Explosion.prototype.step = function(dt) {
 //---------------------------------------------------------------------------------------------------------------------------------
 
 window.addEventListener("load", function() {
-  Game.initialize("game",sprites,playGame);
+  //Por aquí pasa solo una vez al arrancar el juego, y nada mas.
+  Game.initialize("game",sprites,startGame);
 });
 
 

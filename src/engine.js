@@ -26,7 +26,7 @@
 //---------------------------------------------------------------------------------------------------------------------------------
   
 
-var Game = new function() {                                                                  
+var Game = new function() { //Singleton                                                                 
   var boards = [];
 
   // Game Initialization
@@ -81,7 +81,8 @@ var Game = new function() {
   var lastTime = new Date().getTime();
   var maxTime = 1/30;
   // Game Loop
-  this.loop = function() { 
+  this.loop = function() {
+  
     var curTime = new Date().getTime();
     requestAnimationFrame(Game.loop);
     var dt = (curTime - lastTime)/1000;
@@ -151,7 +152,7 @@ var SpriteSheet = new function() {
     this.map = spriteData;
     this.image = new Image();
     this.image.onload = callback;
-    this.image.src = 'img/spritesTapperAlternativos2.png';
+    this.image.src = 'img/spritesTapperAlternativos3.png';
   };
 
   this.draw = function(ctx,sprite,x,y,frame) {
@@ -163,7 +164,7 @@ var SpriteSheet = new function() {
                      s.w, s.h, 
                      Math.floor(x), Math.floor(y),
                      s.w, s.h);
-  };
+  };//draw
 
   return this;
 };//SpriteSheet
@@ -173,8 +174,9 @@ var SpriteSheet = new function() {
 var TitleScreen = function TitleScreen(title,subtitle,callback) {
   var up = false;
   this.step = function(dt) {
-    if(!Game.keys['fire']) up = true;
-    if(up && Game.keys['fire'] && callback) callback();
+    
+    if(!Game.keys['space']) up = true;
+    if(up && Game.keys['space'] && callback) callback();
   };
 
   this.draw = function(ctx) {
@@ -208,7 +210,7 @@ var GameBoard = function() {
 
   // Add a new object to the object list
   this.add = function(obj) { 
-    obj.board=this; 
+    obj.board=this; //AQUI ES DONDE HACEMOS QUE CADA SPRITE TENGA BOARD COMO ATRIBUTO
     this.objects.push(obj); 
     this.cnt[obj.type] = (this.cnt[obj.type] || 0) + 1;
     return obj; 
@@ -315,7 +317,7 @@ Sprite.prototype.draw = function(ctx) {
   SpriteSheet.draw(ctx,this.sprite,this.x,this.y,this.frame);
 };
 
-Sprite.prototype.hit = function(damage) {
+Sprite.prototype.hit = function(damage) { //Aqui parece que no hace falta damage...
   this.board.remove(this);
 };
 
