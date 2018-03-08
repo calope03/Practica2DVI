@@ -271,7 +271,7 @@ var GameBoard = function() {
   // Call step on all objects and them delete
   // any object that have been marked for removal
   this.step = function(dt) { 
-    console.log("activada en step = " + this.activada);
+    //console.log("activada en step = " + this.activada);
     if(this.activada){
       //console.log("wtf")
       this.resetRemoved();
@@ -282,7 +282,7 @@ var GameBoard = function() {
 
   // Draw all the objects
   this.draw= function(ctx) {
-    console.log("activada en draw = " + this.activada);
+    //console.log("activada en draw = " + this.activada);
     if(this.activada) this.iterate('draw',ctx);
   };
 
@@ -315,9 +315,9 @@ Sprite.prototype.setup = function(sprite,props) {
   this.sprite = sprite;
   this.merge(props);
   this.frame = this.frame || 0;
+  //console.log(SpriteSheet.map['Pared'])
   this.w =  SpriteSheet.map[sprite].w;
   this.h =  SpriteSheet.map[sprite].h;
-  //console.log("holiwis");
 };
 
 Sprite.prototype.merge = function(props) {
@@ -339,6 +339,16 @@ Sprite.prototype.hit = function(damage) { //Aqui parece que no hace falta damage
 //Sprite
 
 //---------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
 
 
 

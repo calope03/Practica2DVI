@@ -7,7 +7,7 @@ var sprites = {
  bebidallena: { sx: 496, sy: 106, w: 12, h: 25, frames: 1 },
  bebidavacia: { sx: 496, sy: 138, w: 12, h: 25, frames: 1 },
  deadzone: { sx: 512, sy: 235, w: 5, h: 70, frames: 1 }, //coge un trozo de la imagen en el que no hay NADA, es un sprite "invisible"
- //ParedIzda: {sx: 0, sy: 0, w: 132, h: 480, frames: 1}, //de momento no lo usamos
+ ParedIzda: {sx: 0, sy: 0, w: 132, h: 480, frames: 1}, //de momento no lo usamos
  TapperGameplay: {sx: 0, sy: 480, w: 512, h: 480,frames: 1}
 };//sprites
 
@@ -73,8 +73,12 @@ var playGame = function() {
   //SpriteSheet.draw(Game.ctx,"TapperGameplay",0,0);
   board.add(new EscenarioFondo());
   Game.setBoard(0,board);
+  /*board.add(new EscenarioFondo2());
+  Game.setBoard(20,board);*/
+
   board.add(new Player());
   Game.setBoard(1,board);
+  
 
   GameManager.numTotalClientes = TOTAL_CLIENTES;
   console.log("A VER " + GameManager.numTotalClientes)
@@ -120,28 +124,22 @@ var loseGame = function() {
 //---------------------------------------------------------------------------------------------------------------------------------
 
 var EscenarioFondo = function(){
-  this.setup('TapperGameplay', {}); //setup(sprite, props)
+  this.setup('TapperGameplay', {x:0, y:0}); //setup(sprite, props)
   this.step = function(dt) { };
+
+
 }//EscenarioFondo
 
 EscenarioFondo.prototype = new Sprite();
-
-EscenarioFondo.prototype.draw = function(ctx) { 
-  SpriteSheet.draw(Game.ctx,"TapperGameplay",0,0);
-}
 
 //---------------------------------------------------------------------------------------------------------------------------------
 
-/*var EscenarioFondo2 = function(){
-  this.setup('ParedIzda', {}); //setup(sprite, props)
+var EscenarioFondo2 = function(){
+  this.setup('ParedIzda', {x:0, y:0}); //setup(sprite, props)
   this.step = function(dt) { };
 }//EscenarioFondo
 
-EscenarioFondo.prototype = new Sprite();
-
-EscenarioFondo.prototype.draw = function(ctx) { 
-  SpriteSheet.draw(Game.ctx,"ParedIzda",0,0);
-}*/
+EscenarioFondo2.prototype = new Sprite();
 
 //-----------------------------------------------------------------------------
 
@@ -170,8 +168,8 @@ var Beer = function(x, y, vx, estadoBoolean){
 
     this.x += this.vx * dt;
 
-    var collision = this.board.collide(this,OBJECT_DEADZONE);
-    if(collision) {
+    var objetoColisionado = this.board.collide(this,OBJECT_DEADZONE);
+    if(objetoColisionado) {
       console.log("deadzone choca contra cerveza")
       GameManager.jarraDesperdiciada = true;
       //collision.hit(this.damage); 
@@ -180,20 +178,6 @@ var Beer = function(x, y, vx, estadoBoolean){
       //donde estaba antes ese deadzone
       
       this.board.remove(this); //y esto borraria la cerveza
-    }
-
-    if(this.llena){
-      /*
-        realmente el comportamiento que cambia estando llena o vacia
-        es el sprite y la direccion en la que se mueve.
-        La velocidad en principio es igual,
-        y esté llena o vacía, va a destruirse en cualquier deadzone.
-        Si tiene que realizar algun comportamiento puntual acorde a su estado,
-        este será el sitio para hacerlo.
-      */
-      
-    }else{
-      
     }
 
   }//step de Beer
@@ -305,9 +289,9 @@ var Player = function(){
 
     }
 
-    var collision = this.board.collide(this,OBJECT_DRINK);
-    if(collision) {
-      console.log("cerveza choca contra camarero") //para comprobar que la colision es correcta
+    var objetoColisionado = this.board.collide(this,OBJECT_DRINK);
+    if(objetoColisionado) {
+      console.log("cerveza es colisionada por camarero") //para comprobar que la colision es correcta
       collision.hit(this.damage); 
       //esto borra la bebida (lo que ha detectado que colisiona con el camarero)
       
@@ -360,13 +344,10 @@ var DeadZone = function(x, y){
 
   this.draw = function(dt){
     //ESTO ES UNICAMENTE PARA DEPURAR, vemos asi las deadzones dibujadas
-    //Game.ctx.fillRect(this.x, this.y, 5, 70);
-
+    Game.ctx.fillRect(this.x, this.y, 5, 70);
   }
 
-  this.step = function(dt){
-
-  }
+  this.step = function(dt){ }
 
 }//DeadZone
 
@@ -394,33 +375,31 @@ var Client = function(x, y, vx, nombreSprite){
 
     this.x += this.vx * dt;
 
-    var collision = this.board.collide(this,OBJECT_DRINK);
-    if(collision) {
-      collision.hit(this.damage); 
-      //esto borra la bebida (lo que ha detectado que colisiona con el cliente)
-      
-      this.board.remove(this); //y esto borra al cliente
+    var objetoColisionado = this.board.collide(this,6);
 
-      //this.board.add(new Beer(this.x, this.y, 30, false));
-      this.board.add(new Beer(collision.x, collision.y, 30, false));
-      GameManager.numJarrasVaciasGeneradas++;
-      GameManager.numClientesServidos++;
-      Game.setBoard(1, this.board);
-    } /*else if(this.y < -this.h) { 
-        this.board.remove(this); 
-    }*/
+    if(objetoColisionado) {
 
-    //miramos ahora si ha habido colision con deadzone. 
-    //ESTO SEGURO QUE SE PUEDE MEJORAR CON LO DE LA OR
-    collision = this.board.collide(this,OBJECT_DEADZONE);
-    if(collision) {
-      console.log("cliente choca contra deadzone");
-      //collision.hit(this.damage); 
-      //esto borraria la deadzone (lo que ha detectado que colisiona con el cliente)
-      
-      this.board.remove(this); //y esto borra al cliente
+      if(objetoColisionado instanceof Beer){
+        objetoColisionado.hit(this.damage); 
+        //esto borra la bebida (lo que ha detectado que colisiona con el cliente)
+        
+        this.board.remove(this); //y esto borra al cliente
 
-      GameManager.clienteCabreado = true;
+        //this.board.add(new Beer(this.x, this.y, 30, false));
+        this.board.add(new Beer(objetoColisionado.x, objetoColisionado.y, 30, false));
+        GameManager.numJarrasVaciasGeneradas++;
+        GameManager.numClientesServidos++;
+        Game.setBoard(1, this.board);
+      }else if(objetoColisionado instanceof DeadZone){
+        console.log("cliente choca contra deadzone");
+        //collision.hit(this.damage); 
+        //esto borraria la deadzone (lo que ha detectado que colisiona con el cliente)
+        
+        this.board.remove(this); //y esto borra al cliente
+
+        GameManager.clienteCabreado = true;
+      }
+
     }
 
   }
