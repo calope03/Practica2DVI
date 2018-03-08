@@ -116,10 +116,12 @@ var startGame = function() {
     Game.setBoard(0,new Starfield(20,0.4,100,true));
     Game.setBoard(1,new Starfield(50,0.6,100));
     Game.setBoard(2,new Starfield(100,1.0,50));
-  }*/  
+  }*/ 
+  //console.log("acaba de empezar el juego"); 
   Game.setBoard(0,new TitleScreen("Mini Tapper", 
                                   "Pulsa la barra espaciadora para empezar",
                                   playGame));
+  //console.log("estoy esperando que pulses espacio");
 };
 
 var numeroAleatorio = function(min, max){
@@ -146,6 +148,7 @@ var generaDeadzones = function(board){
 }
 
 var playGame = function() {
+  Game.keys['space'] = false;
   var board = new GameBoard();
   //board.add(new PlayerShip());
   //board.add(new Level(level1,winGame));
@@ -154,7 +157,7 @@ var playGame = function() {
   Game.setBoard(0,board);
   board.add(new Player());
   Game.setBoard(1,board);
-  board.add(new Beer(310, 95, 60, true));
+  //board.add(new Beer(310, 95, 60, true));
   Game.setBoard(1,board);
 
   var spritesClientes = ["cliente", "cliente2", "cliente3", "cliente4"];
