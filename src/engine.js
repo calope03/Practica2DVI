@@ -26,7 +26,7 @@
 //---------------------------------------------------------------------------------------------------------------------------------
   
 
-var Game = new function() { //Singleton                                                                 
+var Game = new function() {                                                                 
   var boards = [];
 
   // Game Initialization
@@ -82,7 +82,9 @@ var Game = new function() { //Singleton
   var maxTime = 1/30;
   // Game Loop
   this.loop = function() {
-  
+    
+    GameManager.compruebaEstado();
+    //console.log(GameManager);
     var curTime = new Date().getTime();
     requestAnimationFrame(Game.loop);
     var dt = (curTime - lastTime)/1000;
@@ -173,10 +175,17 @@ var SpriteSheet = new function() {
 
 var TitleScreen = function TitleScreen(title,subtitle,callback) {
   var up = false;
+
   this.step = function(dt) {
     
     if(!Game.keys['space']) up = true;
-    if(up && Game.keys['space'] && callback) callback();
+
+    if(Game.keys['space']) console.log("pulsado espacio en titlescreen")
+    //en la titlescreen de win o lose, no detecta la pulsacion :(
+
+    if(up && Game.keys['space'] && callback){
+      callback();
+    } 
   };
 
   this.draw = function(ctx) {
@@ -203,6 +212,7 @@ var TitleScreen = function TitleScreen(title,subtitle,callback) {
 
 var GameBoard = function() {
   var board = this;
+  this.activada = true;
 
   // The current list of objects
   this.objects = [];
@@ -261,14 +271,19 @@ var GameBoard = function() {
   // Call step on all objects and them delete
   // any object that have been marked for removal
   this.step = function(dt) { 
-    this.resetRemoved();
-    this.iterate('step',dt);
-    this.finalizeRemoved();
+    console.log("activada en step = " + this.activada);
+    if(this.activada){
+      //console.log("wtf")
+      this.resetRemoved();
+      this.iterate('step',dt);
+      this.finalizeRemoved();
+    }
   };
 
   // Draw all the objects
   this.draw= function(ctx) {
-    this.iterate('draw',ctx);
+    console.log("activada en draw = " + this.activada);
+    if(this.activada) this.iterate('draw',ctx);
   };
 
   // Check for a collision between the 
@@ -324,6 +339,35 @@ Sprite.prototype.hit = function(damage) { //Aqui parece que no hace falta damage
 //Sprite
 
 //---------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 var Level = function(levelData,callback) {
   this.levelData = [];
