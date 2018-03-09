@@ -29,6 +29,10 @@ var OBJECT_PLAYER = 1,
 
 var canvas;
 
+//var spriteClienteAleatorio = spritesClientes[numeroAleatorio(0, spritesClientes.length-1)];
+
+
+
 //---------------------------------------------------------------------------------------------------------------------------------
 
 var startGame = function() {
@@ -88,9 +92,12 @@ var playGame = function() {
   //board.add(new Beer(310, 95, 60, true));
   //Game.setBoard(1,board);
 
-  var spriteClienteAleatorio = spritesClientes[numeroAleatorio(0, spritesClientes.length-1)];
+  //var spriteClienteAleatorio = spritesClientes[numeroAleatorio(0, spritesClientes.length-1)];
+
   var velocidadAleatoria = velocidades[numeroAleatorio(0, velocidades.length-1)];
-  board.add(new Client(coordenadasInicioBarras[0].x, coordenadasInicioBarras[0].y, velocidadAleatoria, spriteClienteAleatorio));
+  //board.add(new Client(coordenadasInicioBarras[0].x, coordenadasInicioBarras[0].y, velocidadAleatoria, spriteClienteAleatorio));
+  board.add(new Spawner(0,3,0,3,3));
+  //numBarra, numClientes, tipo, frecuenciaCreacion, retardo
   Game.setBoard(1,board);
   //----------------------
 
@@ -367,7 +374,7 @@ var Client = function(x, y, vx, nombreSprite){
   //el sprite necesita saber unas coordenadas donde dibujarse de primeras
   this.x = x;
   this.y = y;
-  this.vx = vx;
+  this.vx = vx; 
 
   this.setup(nombreSprite); //setup(sprite, props)
 
@@ -411,12 +418,43 @@ Client.prototype.type = OBJECT_CLIENT;
 
 //---------------------------------------------------------------------------------------------------------------------------------
 
-var Spawner = function(numClientes, tipo, frecuenciaCreacion, retardo){
+var Spawner = function(numBarra, numClientes, tipo, frecuenciaCreacion, retardo){
+  this.primero=false;//para ver cuando se crea el primer cliente
+  this.tiempo = 0; //empezamos en tiempo 0
+  this.retardo = retardo;
+  this.frecuenciaCreacion = frecuenciaCreacion;
+  this.numClientes = numClientes;
+  var spriteClienteAleatorio = spritesClientes[numeroAleatorio(0, spritesClientes.length-1)];
+  this.cliente = new Client(coordenadasInicioBarras[numBarra].x, coordenadasInicioBarras[numBarra].y, 10, spriteClienteAleatorio);
+
+
+/*
+var Spawner = function(y, delay, numClientes, tiempo_entre_clientes, tipo_cliente) {
+  this.tiempo = 0;
+  this.tiempoFrame = 0;
+  this.primero = false;
+
+  this.tipo_cliente = new Client(this.x, this.y);
+
+  GameManager.sumarClientes(numClientes);
+};
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
   /*
-  La clase Spawner contiene la lógica para crear clientes 
-  en una determinada barra del bar. 
-  Haz que este objeto se pueda configurar para que se generen 
-  un número concreto de clientes de un determinado tipo, 
+  La clase Spawner contiene la lógica para crear clientes en una determinada barra del bar. 
+  Haz que este objeto se pueda configurar para que se generen un número concreto de clientes de un determinado tipo,
   a una frecuencia de creación fija y con un determinado retardo
   con respecto a la creación del primer cliente
   (para que no salgan clientes en todas las barras a la vez).
@@ -430,17 +468,50 @@ var Spawner = function(numClientes, tipo, frecuenciaCreacion, retardo){
   Si lo haces, verás que el juego se comporta de manera extraña 
   si mandas la ventana del navegador a segundo plano.
   */
-  this.numClientes = numClientes;
+ /* this.numClientes = numClientes;
   this.tipoCliente = tipo;
   this.frecuenciaCreacion = frecuenciaCreacion;
-  this.retardo = retardo;
+  this.retardo = retardo;*/
   //un determinado retardo con respecto a la creación del primer cliente
   //(para que no salgan clientes en todas las barras a la vez).
 
 
+
 }//Spawner
 
-//Spawner.prototype = new Client();
+Spawner.prototype.draw = function(){}
+Spawner.prototype.step = function(dt){
+  //this.board.add(this.cliente);
+    if(this.primero){
+      this.tiempo = this.tiempo + dt;
+
+      if(this.numClientes > 0 && this.tiempo >= this.frecuenciaCreacion){
+        console.log("que pacha: voy a crear los demas");
+        this.tiempo = 0;
+        this.board.add(Object.create(this.cliente));
+        this.numClientes--;
+      }
+  }
+  else {
+    
+    if(this.tiempo > this.retardo && this.numClientes > 0){
+      console.log("que pacha: voy a crear el primer cliente");
+      this.primero = true;
+      this.tiempo = 0;
+      this.board.add(Object.create(this.cliente));
+      this.numClientes--;
+    }
+    else
+      this.tiempo = this.tiempo + dt;
+  }
+}
+
+
+
+
+
+
+
 
 //--------------------------------------------------------------------------------------------------------------------------
 
@@ -559,17 +630,7 @@ window.addEventListener("load", function() {
 //todo esto de abajo sobra del game.js original del campus virtual, pero podría servir todavía
 //-----------------------------------------------------------------------------
 
-var level1 = [
- // Start,   End, Gap,  Type,   Override
-  [ 0,      4000,  500, 'step' ],
-  [ 6000,   13000, 800, 'ltr' ],
-  [ 10000,  16000, 400, 'circle' ],
-  [ 17800,  20000, 500, 'straight', { x: 50 } ],
-  [ 18200,  20000, 500, 'straight', { x: 90 } ],
-  [ 18200,  20000, 500, 'straight', { x: 10 } ],
-  [ 22000,  25000, 400, 'wiggle', { x: 150 }],
-  [ 22000,  25000, 400, 'wiggle', { x: 100 }]
-];
+
 
 var enemies = {
   straight: { x: 0,   y: -50, sprite: 'enemy_ship', health: 10, 
