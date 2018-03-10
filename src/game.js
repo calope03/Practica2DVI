@@ -17,8 +17,7 @@ var posicionesDeadzoneDer = [{x:335, y:60}, {x:365, y:160}, {x: 395, y: 260}, {x
 var coordenadasInicioBarras = [{x:100, y:90}, {x:80, y:190}, {x: 60, y: 290}, {x: 30, y: 380}];
 
 var spritesClientes = ["cliente", "cliente2", "cliente3", "cliente4"];
-var velocidades = [10, 20, 30, 40, 50, 60];
-var TOTAL_CLIENTES = 1;
+var velocidades = [10, 15, 20, 30];
 
 var OBJECT_PLAYER = 1,
     OBJECT_DRINK = 2,
@@ -66,44 +65,75 @@ var generaDeadzones = function(board){
     board.add(new DeadZone(posicionesDeadzoneDer[i].x, posicionesDeadzoneDer[i].y));
   }
 
-  Game.setBoard(1, board);
+  //Game.setBoard(1, board);
 }
 
 var playGame = function() {
   Game.keys['space'] = false;
+  
+/******************************************************************************************************/
+/*                                        CAPA 0                                                      */
+/******************************************************************************************************/
+
   var board = new GameBoard();
-  //board.add(new PlayerShip());
-  //board.add(new Level(level1,winGame));
   //SpriteSheet.draw(Game.ctx,"TapperGameplay",0,0);
   board.add(new EscenarioFondo());
   Game.setBoard(0,board);
-  /*board.add(new EscenarioFondo2());
-  Game.setBoard(20,board);*/
-
-  board.add(new Player());
-  Game.setBoard(1,board);
   
 
-  GameManager.numTotalClientes = TOTAL_CLIENTES;
-  console.log("A VER " + GameManager.numTotalClientes)
+
+/******************************************************************************************************/
+/*                                        CAPA 1                                                      */
+/******************************************************************************************************/
+  board.add(new Player());
+  //Game.setBoard(1,board);
+  
+
+  GameManager.numTotalClientes = 0;
+  //console.log("A VER " + GameManager.numTotalClientes);
   //OJO, esto tendrá que hacerlo Spawners. Se moverá esta linea.
 
   //---------------------
   //board.add(new Beer(310, 95, 60, true));
   //Game.setBoard(1,board);
 
-  //var spriteClienteAleatorio = spritesClientes[numeroAleatorio(0, spritesClientes.length-1)];
+  var retardo;
+  var numClientes;
+  var frecuenciaCreacion;
+  
 
-  var velocidadAleatoria = velocidades[numeroAleatorio(0, velocidades.length-1)];
-  //board.add(new Client(coordenadasInicioBarras[0].x, coordenadasInicioBarras[0].y, velocidadAleatoria, spriteClienteAleatorio));
-  board.add(new Spawner(0,3,0,3,3));
-  //numBarra, numClientes, tipo, frecuenciaCreacion, retardo
-  Game.setBoard(1,board);
+  //BARRA 1
+  retardo = ((Math.random() * 5)+1);//para generar un retardo entre 1 y 5 con desimales
+  numClientes = Math.floor(Math.random() * 5) + 1;//para generar un numero de clientes entre 1 y 5
+  frecuenciaCreacion = (Math.random() * 5) + 3;
+  board.add(new Spawner(0,numClientes,frecuenciaCreacion,retardo));
+  //numBarra, numClientes, frecuenciaCreacion, retardo
+
+  //BARRA 2
+  retardo = ((Math.random() * 5)+1);//para generar un retardo entre 1 y 5
+  numClientes = Math.floor(Math.random() * 5) ;//para generar un numero de clientes entre 0 y 4  ya que sirve con asegurarse que al menos 1 en una barra
+  frecuenciaCreacion = (Math.random() * 5) + 2;
+  board.add(new Spawner(1,numClientes,frecuenciaCreacion,retardo));
+
+  //BARRA 3
+  retardo = ((Math.random() * 5)+1);//para generar un retardo entre 1 y 5
+  numClientes = Math.floor(Math.random() * 5);//para generar un numero de clientes entre 1 y 5
+  frecuenciaCreacion = (Math.random() * 5) + 2;
+  board.add(new Spawner(2,numClientes,frecuenciaCreacion,retardo));
+
+
+  //BARRA 4
+  retardo = ((Math.random() * 5)+1);//para generar un retardo entre 1 y 5
+  numClientes = Math.floor(Math.random() * 5);//para generar un numero de clientes entre 1 y 5
+  frecuenciaCreacion = (Math.random() * 5) + 2;
+  board.add(new Spawner(3,numClientes,frecuenciaCreacion,retardo));
+
+  
   //----------------------
 
   generaDeadzones(board);
 
-  //board.add(new EscenarioFondo2());
+  Game.setBoard(1,board);
   //Game.setBoard(0,board);
   /* para ver mejor lo que hace setboard
     this.setBoard = function(num,board) { 
@@ -111,6 +141,16 @@ var playGame = function() {
     };
   */
   //Game.setBoard(5,new GamePoints(0));
+
+/******************************************************************************************************/
+/*                                        CAPA 2                                                      */
+/******************************************************************************************************/
+
+
+//AQUI HAY QUE AÑADIR LO DE LA CAPA EXTRA PARA TAPAR LAS LATAS
+
+  board.add(new EscenarioFondo2());
+  Game.setBoard(2,board);
 
 };//playGame
 
@@ -193,20 +233,7 @@ var Beer = function(x, y, vx, estadoBoolean){
 
 Beer.prototype = new Sprite();
 Beer.prototype.type = OBJECT_DRINK;
-/*Beer.prototype.step = function(){
-    this.x += this.vx * dt;
 
-    var collision = this.board.collide(this,OBJECT_DEADZONE);
-    if(collision) {
-      console.log("deadzone choca contra cerveza")
-      //collision.hit(this.damage); 
-      //esto borra la deadzone (lo que ha detectado que colisiona con cerveza)
-      //si la borrasemos tras la primera colision, las bebidas que no se eliminarian
-      //donde estaba antes ese deadzone
-      
-      this.board.remove(this); //y esto borraria la cerveza
-    }
-}*/
 
 //---------------------------------------------------------------------------------------------------------------------------------
 
@@ -276,30 +303,17 @@ var Player = function(){
       //var clonCerveza = Object.create(Beer.prototype, { 'x':{value: 100}, 'y':{value:100}, 'vx':{value: -30}});
       //var clonCerveza = Object.create(Beer.prototype);
 
-      this.board.add(new Beer(this.x-12, this.y+10, 70, true));
+      this.board.add(new Beer(this.x-12, this.y+10, 40, true));
       //this.board.add(clonCerveza);
-      Game.setBoard(1,this.board);
+     // Game.setBoard(1,this.board);
 
-
-      /*var bob = Object.create(userB, 
-                                  {
-                                    'id' : {
-                                      value: MY_GLOBAL.nextId(),
-                                      enumerable:true // writable:false, configurable(deletable):false by default
-                                    },
-                                    'name': {
-                                      value: 'Bob',
-                                      enumerable: true
-                                    }
-                                  }
-                            );*/
 
     }
 
     var objetoColisionado = this.board.collide(this,OBJECT_DRINK);
     if(objetoColisionado) {
       console.log("cerveza es colisionada por camarero") //para comprobar que la colision es correcta
-      collision.hit(this.damage); 
+      objetoColisionado.hit(this.damage); 
       //esto borra la bebida (lo que ha detectado que colisiona con el camarero)
       
       //this.board.remove(this); //y esto borraria al camarero, pero no queremos eso!
@@ -311,13 +325,7 @@ var Player = function(){
     }
 
     this.reload-=dt;
-    /*if(Game.keys['fire'] && this.reload < 0) {
-      Game.keys['fire'] = false;
-      this.reload = this.reloadTime;
-
-      this.board.add(new PlayerMissile(this.x,this.y+this.h/2));
-      this.board.add(new PlayerMissile(this.x+this.w,this.y+this.h/2));
-    }*/
+    
       
 
   };//step
@@ -394,9 +402,8 @@ var Client = function(x, y, vx, nombreSprite){
 
         //this.board.add(new Beer(this.x, this.y, 30, false));
         this.board.add(new Beer(objetoColisionado.x, objetoColisionado.y, 30, false));
-        GameManager.numJarrasVaciasGeneradas++;
-        GameManager.numClientesServidos++;
-        Game.setBoard(1, this.board);
+        GameManager.servir();
+        //Game.setBoard(1, this.board);
       }else if(objetoColisionado instanceof DeadZone){
         console.log("cliente choca contra deadzone");
         //collision.hit(this.damage); 
@@ -418,75 +425,24 @@ Client.prototype.type = OBJECT_CLIENT;
 
 //---------------------------------------------------------------------------------------------------------------------------------
 
-var Spawner = function(numBarra, numClientes, tipo, frecuenciaCreacion, retardo){
+var Spawner = function(numBarra, numClientes, frecuenciaCreacion, retardo){
   this.primero=false;//para ver cuando se crea el primer cliente
   this.tiempo = 0; //empezamos en tiempo 0
   this.retardo = retardo;
   this.frecuenciaCreacion = frecuenciaCreacion;
   this.numClientes = numClientes;
   var spriteClienteAleatorio = spritesClientes[numeroAleatorio(0, spritesClientes.length-1)];
-  this.cliente = new Client(coordenadasInicioBarras[numBarra].x, coordenadasInicioBarras[numBarra].y, 10, spriteClienteAleatorio);
-
-
-/*
-var Spawner = function(y, delay, numClientes, tiempo_entre_clientes, tipo_cliente) {
-  this.tiempo = 0;
-  this.tiempoFrame = 0;
-  this.primero = false;
-
-  this.tipo_cliente = new Client(this.x, this.y);
-
-  GameManager.sumarClientes(numClientes);
-};
-*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-  /*
-  La clase Spawner contiene la lógica para crear clientes en una determinada barra del bar. 
-  Haz que este objeto se pueda configurar para que se generen un número concreto de clientes de un determinado tipo,
-  a una frecuencia de creación fija y con un determinado retardo
-  con respecto a la creación del primer cliente
-  (para que no salgan clientes en todas las barras a la vez).
-  Para ello os recomendamos que utilicéis un patrón Prototype. 
-
-  El Spawner es inicializado con un objeto prototípico (un Cliente) 
-  que iremos clonando y añadiendo a la capa del juego con una determinada 
-  frecuencia. 
-  NO debes usar el método setInterval para decidir 
-  cuándo clonar el objeto prototipo (Este motor no usa setInterval para implementar el bucle de juego sino un polyfill llamado requestAnimationFrame. Si usas el setTimeout entonces se producirán comportamientos extraños en la ejecución del bucle.) 
-  Si lo haces, verás que el juego se comporta de manera extraña 
-  si mandas la ventana del navegador a segundo plano.
-  */
- /* this.numClientes = numClientes;
-  this.tipoCliente = tipo;
-  this.frecuenciaCreacion = frecuenciaCreacion;
-  this.retardo = retardo;*/
-  //un determinado retardo con respecto a la creación del primer cliente
-  //(para que no salgan clientes en todas las barras a la vez).
-
-
-
+  var velocidadAleatoria = velocidades[numeroAleatorio(0, velocidades.length-1)];
+  this.cliente = new Client(coordenadasInicioBarras[numBarra].x, coordenadasInicioBarras[numBarra].y, velocidadAleatoria, spriteClienteAleatorio);
+  GameManager.sumarClientes(this.numClientes);;
 }//Spawner
 
 Spawner.prototype.draw = function(){}
 Spawner.prototype.step = function(dt){
-  //this.board.add(this.cliente);
-    if(this.primero){
+ 
+  if(this.primero){
       this.tiempo = this.tiempo + dt;
-
       if(this.numClientes > 0 && this.tiempo >= this.frecuenciaCreacion){
-        console.log("que pacha: voy a crear los demas");
         this.tiempo = 0;
         this.board.add(Object.create(this.cliente));
         this.numClientes--;
@@ -495,7 +451,6 @@ Spawner.prototype.step = function(dt){
   else {
     
     if(this.tiempo > this.retardo && this.numClientes > 0){
-      console.log("que pacha: voy a crear el primer cliente");
       this.primero = true;
       this.tiempo = 0;
       this.board.add(Object.create(this.cliente));
@@ -504,13 +459,8 @@ Spawner.prototype.step = function(dt){
     else
       this.tiempo = this.tiempo + dt;
   }
+
 }
-
-
-
-
-
-
 
 
 //--------------------------------------------------------------------------------------------------------------------------
@@ -550,10 +500,10 @@ var GameManager = new function(){ //asi seria Singleton?
 
   this.compruebaEstado = function(){
 
-    /*
-    console.log("Clientes servidos = " + this.numClientesServidos);
-    console.log("Total clientes = " + this.numTotalClientes);
-    console.log(" ");
+    
+    /*console.log("Clientes servidos = " + this.numClientesServidos);
+    console.log("Total clientes = " + this.numTotalClientes);*/
+   /* console.log(" ");
     console.log("Jarras vacias = " + this.numJarrasVaciasGeneradas);*/
     
 
@@ -562,16 +512,18 @@ var GameManager = new function(){ //asi seria Singleton?
     }
 
     //si no quedan clientes pendientes de servir y no quedan jarras vacias por recoger, ganamos
-    if(this.numClientesServidos === this.numTotalClientes && this.numJarrasVaciasGeneradas === 0) {
+    if(this.numClientesServidos == this.numTotalClientes && this.numJarrasVaciasGeneradas === 0) {
       winGame();
     }
   }
+  this.sumarClientes = function(clientes){
+    this.numTotalClientes += clientes;
+  }
+  this.servir = function(){
+    this.numClientesServidos++;
+    this.numJarrasVaciasGeneradas++;
+  }
 
-  /*PlayerShip.prototype.hit = function(damage) {
-        if(this.board.remove(this)) {
-          loseGame();
-        }
-      };*/
 
 };
 
