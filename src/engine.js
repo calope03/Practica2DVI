@@ -25,6 +25,39 @@
 
 //---------------------------------------------------------------------------------------------------------------------------------
   
+var Metrics = new function(){
+
+  this.startTime = 0; //desde cuando empezamos a contar
+  this.frameNumber = 0; //los frames que llevamos
+  this.last = 0;
+  this.elapsed = 0;
+
+  this.drawFPS = function(ctx, looptime){
+    ++this.frameNumber;
+    var d = new Date().getTime(); //cogemos hora actual
+    //veremos cuanto ha pasado desde la ultima vez que lo llamamos
+    currentTime = (d-this.startTime)/1000;
+    result = Math.floor(this.frameNumber/currentTime); //floor redondea
+    if(currentTime >1){ //si se ha pasado de 1 segundo
+      this.startTime = new Date().getTime();
+      this.frameNumber = 0;
+    }
+
+    this.elapsed = this.elapsed*0.9 + 0.1*(d - this.last - looptime);
+    this.last = d;
+
+    Game.ctx.fillStyle = "#fff";
+    ctx.textAlign = "left";
+    ctx.font = "15px monospace";
+    //subtitle,Game.width/2,Game.height/2 + 140
+    ctx.fillText("fps: " + result, 0, 15);
+    //ctx.fillText("compTime: " + Math.round(this.elapsed*100)/100, 0, 30);
+    ctx.fillText("compTime: " + this.elapsed.toFixed(2), 0, 30);
+    //alternativa usando toFixed aunque hay casos donde puede no redondear
+    //de forma muy precisa como con 1,5550, que da 1,55 en vez de 1,56
+  }
+}
+
 
 var Game = new function() {                                                                 
   var boards = [];
@@ -91,17 +124,21 @@ var Game = new function() {
     if(dt > maxTime) { dt = maxTime; }
 
     for(var i=0,len = boards.length;i<len;i++) {
-      if(boards[i]) { 
+      
+      if(boards[i] && boards[i].activada) {
+      //console.log(i + "holi" + boards[i].activada); 
         boards[i].step(dt);
         boards[i].draw(Game.ctx);
       }
     }
     lastTime = curTime;
+    Metrics.drawFPS(Game.ctx,(curTime - lastTime))
   };
   
   // Change an active game board
-  this.setBoard = function(num,board) { boards[num] = board; };
+  this.setBoard = function(num,board) { boards[num] = board; boards[num].activada = true; /*console.log(boards[num]);*/ };
 
+  this.desactivarBoard = function(num){boards[num].activada = false;}
 
   this.setupMobile = function() {
     var container = document.getElementById("container"),
@@ -182,7 +219,7 @@ var TitleScreen = function TitleScreen(title,subtitle,callback) {
 
     if(Game.keys['space']) console.log("pulsado espacio en titlescreen")
     //en la titlescreen de win o lose, no detecta la pulsacion :(
-
+    
     if(up && Game.keys['space'] && callback){
       callback();
     } 

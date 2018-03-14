@@ -46,7 +46,7 @@ var startGame = function() {
     Game.setBoard(1,new Starfield(50,0.6,100));
     Game.setBoard(2,new Starfield(100,1.0,50));
   }*/  
-  Game.setBoard(0,new TitleScreen("Mini Tapper", 
+  Game.setBoard(3,new TitleScreen("Mini Tapper", 
                                   "Pulsa la barra espaciadora para empezar",
                                   playGame));
 };
@@ -70,11 +70,11 @@ var generaDeadzones = function(board){
 
 var playGame = function() {
   Game.keys['space'] = false;
-  
+
+  Game.desactivarBoard(3);
 /******************************************************************************************************/
 /*                                        CAPA 0                                                      */
 /******************************************************************************************************/
-
   var board = new GameBoard();
   //SpriteSheet.draw(Game.ctx,"TapperGameplay",0,0);
   board.add(new EscenarioFondo());
@@ -108,27 +108,28 @@ var playGame = function() {
   numClientes = Math.floor(Math.random() * 5) + 1;//para generar un numero de clientes entre 1 y 5
   frecuenciaCreacion = (Math.random() * 5) + 3;
   board1.add(new Spawner(0,numClientes,frecuenciaCreacion,retardo));
+  //board1.add(new Metrics());
   //numBarra, numClientes, frecuenciaCreacion, retardo
-/*
+
   //BARRA 2
   retardo = ((Math.random() * 5)+1);//para generar un retardo entre 1 y 5
   numClientes = Math.floor(Math.random() * 5) ;//para generar un numero de clientes entre 0 y 4  ya que sirve con asegurarse que al menos 1 en una barra
   frecuenciaCreacion = (Math.random() * 5) + 2;
-  board.add(new Spawner(1,numClientes,frecuenciaCreacion,retardo));
+  board1.add(new Spawner(1,numClientes,frecuenciaCreacion,retardo));
 
   //BARRA 3
   retardo = ((Math.random() * 5)+1);//para generar un retardo entre 1 y 5
   numClientes = Math.floor(Math.random() * 5);//para generar un numero de clientes entre 1 y 5
   frecuenciaCreacion = (Math.random() * 5) + 2;
-  board.add(new Spawner(2,numClientes,frecuenciaCreacion,retardo));
+  board1.add(new Spawner(2,numClientes,frecuenciaCreacion,retardo));
 
 
   //BARRA 4
   retardo = ((Math.random() * 5)+1);//para generar un retardo entre 1 y 5
   numClientes = Math.floor(Math.random() * 5);//para generar un numero de clientes entre 1 y 5
   frecuenciaCreacion = (Math.random() * 5) + 2;
-  board.add(new Spawner(3,numClientes,frecuenciaCreacion,retardo));
-*/
+  board1.add(new Spawner(3,numClientes,frecuenciaCreacion,retardo));
+
   
   //----------------------
 
@@ -156,19 +157,30 @@ var playGame = function() {
 };//playGame
 
 var winGame = function() {
-  GameBoard.activada = false;
+  reiniciar();
+  Game.desactivarBoard(1);
   Game.setBoard(3,new TitleScreen("¡Has ganado!", 
-                                  "Pulsa la barra espaciadora para otra partida",
+                                  "Pulsa espacio para otra partida",
                                   playGame));
 };
 
 var loseGame = function() {
-  GameBoard.activada = false;
-  Game.setBoard(3,new TitleScreen("¡Has perdido! >.<", 
-                                  "Pulsa la barra espaciadora para otra partida",
+  reiniciar();
+  Game.desactivarBoard(1);
+  Game.setBoard(3,new TitleScreen("¡Has perdido!", 
+                                  "Pulsa espacio para otra partida",
                                   playGame));
 };
 
+
+
+var reiniciar = function(){
+  GameManager.numTotalClientes = -1;
+  GameManager.numJarrasVaciasGeneradas = 0;
+  GameManager.numClientesServidos = 0;
+  GameManager.jarraDesperdiciada = false; 
+  GameManager.clienteCabreado = false;
+}
 //---------------------------------------------------------------------------------------------------------------------------------
 
 var EscenarioFondo = function(){
@@ -302,12 +314,12 @@ var Player = function(){
       Game.keys['space'] = false;
       this.reload = this.reloadTime;
 
-      console.log("has pulsado espacio");
+      //console.log("has pulsado espacio");
       //var clonCerveza = Object.create(Beer);
 
       //var clonCerveza = Object.create(Beer.prototype, { 'x':{value: 100}, 'y':{value:100}, 'vx':{value: -30}});
       //var clonCerveza = Object.create(Beer.prototype);
-      console.log(this.board);
+     // console.log(this.board);
       this.board.add(new Beer(this.x-12, this.y+10, 100, true));
       //this.board.add(clonCerveza);
       //Game.setBoard(1,this.board);
@@ -394,7 +406,7 @@ var Client = function(x, y, vx, nombreSprite){
   this.step = function(dt){
 
     this.x += this.vx * dt;
-    console.log("la velocidad del cleinte es:"+ this.vx);
+   // console.log("la velocidad del cleinte es:"+ this.vx);
     var objetoColisionado = this.board.collide(this,6);
 
     if(objetoColisionado) {
@@ -467,6 +479,7 @@ Spawner.prototype.step = function(dt){
 
 }
 
+//Para imprimir informacion util en el desarrollo: iteraciones, tiempo, computacion...
 
 //--------------------------------------------------------------------------------------------------------------------------
 
