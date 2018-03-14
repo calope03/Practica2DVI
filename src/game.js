@@ -17,7 +17,7 @@ var posicionesDeadzoneDer = [{x:335, y:60}, {x:365, y:160}, {x: 395, y: 260}, {x
 var coordenadasInicioBarras = [{x:100, y:90}, {x:80, y:190}, {x: 60, y: 290}, {x: 30, y: 380}];
 
 var spritesClientes = ["cliente", "cliente2", "cliente3", "cliente4"];
-var velocidades = [10, 15, 20, 30];
+var velocidades = [30, 35, 40, 50];
 
 var OBJECT_PLAYER = 1,
     OBJECT_DRINK = 2,
@@ -85,7 +85,8 @@ var playGame = function() {
 /******************************************************************************************************/
 /*                                        CAPA 1                                                      */
 /******************************************************************************************************/
-  board.add(new Player());
+  var board1 = new GameBoard();
+  board1.add(new Player());
   //Game.setBoard(1,board);
   
 
@@ -94,7 +95,7 @@ var playGame = function() {
   //OJO, esto tendrá que hacerlo Spawners. Se moverá esta linea.
 
   //---------------------
-  //board.add(new Beer(310, 95, 60, true));
+  //board.add(new Beer(310, 300, 60, true));
   //Game.setBoard(1,board);
 
   var retardo;
@@ -106,9 +107,9 @@ var playGame = function() {
   retardo = ((Math.random() * 5)+1);//para generar un retardo entre 1 y 5 con desimales
   numClientes = Math.floor(Math.random() * 5) + 1;//para generar un numero de clientes entre 1 y 5
   frecuenciaCreacion = (Math.random() * 5) + 3;
-  board.add(new Spawner(0,numClientes,frecuenciaCreacion,retardo));
+  board1.add(new Spawner(0,numClientes,frecuenciaCreacion,retardo));
   //numBarra, numClientes, frecuenciaCreacion, retardo
-
+/*
   //BARRA 2
   retardo = ((Math.random() * 5)+1);//para generar un retardo entre 1 y 5
   numClientes = Math.floor(Math.random() * 5) ;//para generar un numero de clientes entre 0 y 4  ya que sirve con asegurarse que al menos 1 en una barra
@@ -127,13 +128,13 @@ var playGame = function() {
   numClientes = Math.floor(Math.random() * 5);//para generar un numero de clientes entre 1 y 5
   frecuenciaCreacion = (Math.random() * 5) + 2;
   board.add(new Spawner(3,numClientes,frecuenciaCreacion,retardo));
-
+*/
   
   //----------------------
 
-  generaDeadzones(board);
+  generaDeadzones(board1);
 
-  Game.setBoard(1,board);
+  Game.setBoard(1,board1);
   //Game.setBoard(0,board);
   /* para ver mejor lo que hace setboard
     this.setBoard = function(num,board) { 
@@ -148,9 +149,9 @@ var playGame = function() {
 
 
 //AQUI HAY QUE AÑADIR LO DE LA CAPA EXTRA PARA TAPAR LAS LATAS
-
-  board.add(new EscenarioFondo2());
-  Game.setBoard(2,board);
+  var board2 = new GameBoard();
+  board2.add(new EscenarioFondo2());
+  Game.setBoard(2,board2);
 
 };//playGame
 
@@ -200,6 +201,7 @@ var Beer = function(x, y, vx, estadoBoolean){
   //el sprite necesita saber unas coordenadas donde dibujarse de primeras
   this.x = x;
   this.y = y;
+ // this.xant = 0;
   this.llena = estadoBoolean;
 
   if(this.llena){
@@ -207,14 +209,17 @@ var Beer = function(x, y, vx, estadoBoolean){
     this.vx = vx*-1;
   }else{
     this.setup('bebidavacia');
+    //console.log("vx a la vuelta vale: " + this.vx);
     this.vx = vx;
+   //console.log("vx a la vuelta vale: " + this.vx);
   }
 
   
   this.step = function(dt){
-
+    //this.xant =this.x;
     this.x += this.vx * dt;
-
+   // var resultado = (this.xant -this.x)/dt;
+   // console.log("mi velocidad es: "+ this.vx);
     var objetoColisionado = this.board.collide(this,OBJECT_DEADZONE);
     if(objetoColisionado) {
       console.log("deadzone choca contra cerveza")
@@ -302,10 +307,10 @@ var Player = function(){
 
       //var clonCerveza = Object.create(Beer.prototype, { 'x':{value: 100}, 'y':{value:100}, 'vx':{value: -30}});
       //var clonCerveza = Object.create(Beer.prototype);
-
-      this.board.add(new Beer(this.x-12, this.y+10, 40, true));
+      console.log(this.board);
+      this.board.add(new Beer(this.x-12, this.y+10, 100, true));
       //this.board.add(clonCerveza);
-     // Game.setBoard(1,this.board);
+      //Game.setBoard(1,this.board);
 
 
     }
@@ -389,7 +394,7 @@ var Client = function(x, y, vx, nombreSprite){
   this.step = function(dt){
 
     this.x += this.vx * dt;
-
+    console.log("la velocidad del cleinte es:"+ this.vx);
     var objetoColisionado = this.board.collide(this,6);
 
     if(objetoColisionado) {
@@ -401,7 +406,7 @@ var Client = function(x, y, vx, nombreSprite){
         this.board.remove(this); //y esto borra al cliente
 
         //this.board.add(new Beer(this.x, this.y, 30, false));
-        this.board.add(new Beer(objetoColisionado.x, objetoColisionado.y, 30, false));
+        this.board.add(new Beer(objetoColisionado.x, objetoColisionado.y, 50, false));
         GameManager.servir();
         //Game.setBoard(1, this.board);
       }else if(objetoColisionado instanceof DeadZone){
