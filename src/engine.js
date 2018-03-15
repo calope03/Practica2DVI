@@ -50,9 +50,9 @@ var Metrics = new function(){
     ctx.textAlign = "left";
     ctx.font = "15px monospace";
     //subtitle,Game.width/2,Game.height/2 + 140
-    ctx.fillText("fps: " + result, 0, 15);
+    ctx.fillText("fps: " + result, 0, 460);
     //ctx.fillText("compTime: " + Math.round(this.elapsed*100)/100, 0, 30);
-    ctx.fillText("compTime: " + this.elapsed.toFixed(2), 0, 30);
+    ctx.fillText("compTime: " + this.elapsed.toFixed(2), 0, 475);
     //alternativa usando toFixed aunque hay casos donde puede no redondear
     //de forma muy precisa como con 1,5550, que da 1,55 en vez de 1,56
   }
