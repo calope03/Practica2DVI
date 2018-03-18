@@ -9,7 +9,17 @@ var sprites = {
  deadzone: { sx: 512, sy: 235, w: 5, h: 70, frames: 1 }, //coge un trozo de la imagen en el que no hay NADA, es un sprite "invisible"
  ParedIzda: {sx: 0, sy: 0, w: 132, h: 480, frames: 1}, //de momento no lo usamos
  TapperGameplay: {sx: 0, sy: 480, w: 512, h: 480,frames: 1},
- corazon: {sx: 514, sy: 264, w: 26, h: 23, frames: 1}
+ corazon: {sx: 514, sy: 264, w: 26, h: 23, frames: 1},
+ 0: {sx: 397, sy: 293, w: 17, h: 19, frames: 1},
+ 1: {sx: 415, sy: 293, w: 16, h: 19, frames: 1},
+ 2: {sx: 431, sy: 293, w: 16, h: 18, frames: 1},
+ 3: {sx: 447, sy: 293, w: 16, h: 18, frames: 1},
+ 4: {sx: 463, sy: 293, w: 16, h: 18, frames: 1},
+ 5: {sx: 479, sy: 293, w: 16, h: 18, frames: 1},
+ 6: {sx: 495, sy: 293, w: 16, h: 18, frames: 1},
+ 7: {sx: 511, sy: 293, w: 16, h: 18, frames: 1},
+ 8: {sx: 527, sy: 293, w: 16, h: 18, frames: 1},
+ 9: {sx: 543, sy: 293, w: 16, h: 18, frames: 1}
 };//sprites
 
 var posicionesDeadzoneIzq = [{x:90, y:50}, {x:60, y:160}, {x: 30, y: 250}, {x: -2, y: 350}];
@@ -18,6 +28,9 @@ var posicionesDeadzoneDer = [{x:335, y:60}, {x:365, y:160}, {x: 395, y: 260}, {x
 var coordenadasInicioBarras = [{x:100, y:90}, {x:80, y:190}, {x: 60, y: 290}, {x: 30, y: 380}];
 
 var coordenadasCorazon= [{x:10, y:10}, {x:40, y:10}, {x: 70, y: 10}];
+var coordenadasPuntuacion1= [{x: 480, y: 10}, {x: 460, y: 10}, {x: 440, y: 10}, {x:420, y:10}, {x:400, y:10}, {x:380, y:10}];
+
+
 
 var spritesClientes = ["cliente", "cliente2", "cliente3", "cliente4"];
 var velocidades = [30, 35, 40, 45];
@@ -150,6 +163,7 @@ var playGame = function() {
   var board2 = new GameBoard();
   board2.add(new EscenarioFondo2());
   board2.add(new Salud());
+  board2.add(new PuntiacionMax());
   Game.setBoard(2,board2);
 
 };//playGame
@@ -178,6 +192,7 @@ var reiniciar = function(){
   GameManager.numJarrasGeneradas = 0;
   GameManager.numClientesServidos = 0;
   GameManager.vidasDisponibles = VIDAS;
+  GameManager.puntuacionActual = 0;
 }
 //---------------------------------------------------------------------------------------------------------------------------------
 
@@ -334,6 +349,7 @@ var Player = function(){
       //this.board.add(new Beer(collision.x, collision.y, 30, false));
       //Game.setBoard(1, this.board);
       GameManager.numJarrasGeneradas--;
+      GameManager.puntuacionActual += 100;
     }
 
     this.reload-=dt;
@@ -398,7 +414,25 @@ var Salud = function(){
 
   this.step = function(dt){ }
 
-}//DeadZone
+}//Salud
+var PuntiacionMax = function(){
+   
+  this.draw = function(dt){ 
+    var puntuacionMax = GameManager.puntuacionMaxima.toString();
+    
+    for(var i = 0; i < puntuacionMax.length;i++){
+      var s = SpriteSheet.map[puntuacionMax[i]];
+      this.x = coordenadasPuntuacion1[puntuacionMax.length - i - 1].x;
+     // console.log();
+      this.y = coordenadasPuntuacion1[puntuacionMax.length - i - 1].y;
+      Game.ctx.drawImage(SpriteSheet.image, s.sx + 0 * s.w, s.sy, s.w, s.h, this.x, this.y, s.w, s.h);
+      //console.log("toy aqui");
+    }
+ }
+
+  this.step = function(dt){ }
+
+}//Salud
 
 //---------------------------------------------------------------------------------------------------------------------------------
 
@@ -434,6 +468,7 @@ var Client = function(x, y, vx, nombreSprite){
         //this.board.add(new Beer(this.x, this.y, 30, false));
         this.board.add(new Beer(objetoColisionado.x, objetoColisionado.y, this.vx, false));
         GameManager.servir();
+        GameManager.puntuacionActual += 50;
       }else if(objetoColisionado instanceof DeadZone){
         console.log("cliente choca contra deadzone");
         //collision.hit(this.damage); 
@@ -523,13 +558,18 @@ var GameManager = new function(){ //asi seria Singleton?
   this.numJarrasGeneradas = 0; //esto va aumentando cuando avisan a GameManager
   this.numClientesServidos = 0; //igual
   this.vidasDisponibles = VIDAS;
+  this.puntuacionActual = 0;
+  this.puntuacionMaxima = 0;
   //estos 2 ultimos cambiarán a true cuando haya una colision con cualquier deadzone
   //por parte de algun cliente y/o jarra (llena o vacia)
 
 
 
   this.compruebaEstado = function(){
- 
+    
+    if(this.puntuacionActual >= this.puntuacionMaxima){
+      this.puntuacionMaxima = this.puntuacionActual;
+    }
    
     if(this.vidasDisponibles == 0){
       loseGame();
