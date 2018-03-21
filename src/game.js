@@ -163,7 +163,7 @@ var playGame = function() {
   var board2 = new GameBoard();
   board2.add(new EscenarioFondo2());
   board2.add(new Salud());
-  board2.add(new PuntiacionMax());
+  board2.add(new Puntuacion());
   Game.setBoard(2,board2);
 
 };//playGame
@@ -171,16 +171,17 @@ var playGame = function() {
 var winGame = function() {
   reiniciar();
   Game.desactivarBoard(1);
-  Game.setBoard(3,new TitleScreen("¡Has ganado!", 
+  Game.setBoard(3,new MiTitleScreen("¡Has ganado!", 
                                   "Pulsa espacio para otra partida",
                                   playGame));
 };
 
 var loseGame = function() {
+  console.log("EStoy llamando a losegame")
   reiniciar();
   Game.desactivarBoard(1);
   //Game.boards[1].activada = false;
-  Game.setBoard(3,new TitleScreen("¡Has perdido!", 
+  Game.setBoard(3,new MiTitleScreen("¡Has perdido!", 
                                   "Pulsa espacio para otra partida",
                                   playGame));
 };
@@ -192,7 +193,7 @@ var reiniciar = function(){
   GameManager.numJarrasGeneradas = 0;
   GameManager.numClientesServidos = 0;
   GameManager.vidasDisponibles = VIDAS;
-  GameManager.puntuacionActual = 0;
+  
 }
 //---------------------------------------------------------------------------------------------------------------------------------
 
@@ -415,16 +416,20 @@ var Salud = function(){
   this.step = function(dt){ }
 
 }//Salud
-var PuntiacionMax = function(){
+
+//---------------------------------------------------------------------------------------------------------------------------------
+
+
+var Puntuacion = function(){
    
   this.draw = function(dt){ 
-    var puntuacionMax = GameManager.puntuacionMaxima.toString();
+    var puntuacionAct = GameManager.puntuacionActual.toString();
     
-    for(var i = 0; i < puntuacionMax.length;i++){
-      var s = SpriteSheet.map[puntuacionMax[i]];
-      this.x = coordenadasPuntuacion1[puntuacionMax.length - i - 1].x;
+    for(var i = 0; i < puntuacionAct.length;i++){
+      var s = SpriteSheet.map[puntuacionAct[i]];
+      this.x = coordenadasPuntuacion1[puntuacionAct.length - i - 1].x;
      // console.log();
-      this.y = coordenadasPuntuacion1[puntuacionMax.length - i - 1].y;
+      this.y = coordenadasPuntuacion1[puntuacionAct.length - i - 1].y;
       Game.ctx.drawImage(SpriteSheet.image, s.sx + 0 * s.w, s.sy, s.w, s.h, this.x, this.y, s.w, s.h);
       //console.log("toy aqui");
     }
@@ -432,7 +437,7 @@ var PuntiacionMax = function(){
 
   this.step = function(dt){ }
 
-}//Salud
+}//Puntuacion Maxima
 
 //---------------------------------------------------------------------------------------------------------------------------------
 

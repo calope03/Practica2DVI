@@ -234,13 +234,69 @@ var TitleScreen = function TitleScreen(title,subtitle,callback) {
     // Foreground
     ctx.fillStyle = "#FFFFFF";
 
-    ctx.font = "bold 40px 'Press Start 2P'";
+    ctx.font = "70px 'Rye'";
     var measure = ctx.measureText(title);  
     ctx.fillText(title,Game.width/2 - measure.width/2,Game.height/2);
 
-    ctx.font = "12px 'Press Start 2P'";
+    ctx.font = "20px 'Rye'";
     var measure2 = ctx.measureText(subtitle);
-    ctx.fillText(subtitle,Game.width/2 - measure2.width/2,Game.height/2 + 40);
+    ctx.fillText(subtitle,Game.width/2 - measure2.width/2,Game.height/2 + 50);
+  };
+};//TitleScreen
+
+//---------------------------------------------------------------------------------------------------------------------------------
+
+var MiTitleScreen = function MiTitleScreen(title,subtitle,callback) {
+  var up = false;
+  var currTime = new Date().getTime();
+  var tiempoEspera = currTime+1000;
+
+  this.step = function(dt) {
+    
+    if(!Game.keys['space']) up = true;
+
+    if(Game.keys['space']) console.log("pulsado espacio en titlescreen")
+    //en la titlescreen de win o lose, no detecta la pulsacion :(
+    
+    if(up && Game.keys['space'] && callback){ 
+      callback();
+    } 
+  };
+
+  this.draw = function(ctx) {
+  
+  
+    if(currTime >= tiempoEspera){
+      // Background
+      GameManager.puntuacionActual = 0;
+      ctx.fillStyle = "#000000";
+      ctx.fillRect(0, 0, Game.width, Game.height);
+
+      // Foreground
+      ctx.fillStyle = "#FFFFFF";
+
+      ctx.font = "68px 'Rye'";
+      var measure = ctx.measureText(title);  
+      ctx.fillText(title,Game.width/2 - measure.width/2,Game.height/2);
+
+      ctx.font = "20px 'Rye'";
+      var measure2 = ctx.measureText(subtitle);
+      ctx.fillText(subtitle,Game.width/2 - measure2.width/2,Game.height/2 + 50);
+
+
+      var puntuacionMax = GameManager.puntuacionMaxima.toString();
+      var tupuntuacion  = "Tu puntuacion maxima es: " + puntuacionMax;
+      ctx.font = "20px 'Rye'";
+      var measure3 = ctx.measureText(tupuntuacion);
+      ctx.fillText(tupuntuacion,Game.width/2 - measure3.width/2,Game.height/2 + 100);
+    }else{
+      currTime = new Date().getTime();
+      /*console.log("tiempoact "+currTime);
+      console.log("tiempo espera "+tiempoEspera);*/
+    }
+    
+    
+
   };
 };//TitleScreen
 
