@@ -127,7 +127,7 @@ var playGame = function() {
   board1.add(new Spawner(0,numClientes,frecuenciaCreacion,retardo));
   //board1.add(new Metrics());
   //numBarra, numClientes, frecuenciaCreacion, retardo
-
+/*
   //BARRA 2
   retardo = ((Math.random() * 5)+1);//para generar un retardo entre 1 y 5
   numClientes = numeroAleatorio(0,4);//para generar un numero de clientes entre 0 y 4  ya que sirve con asegurarse que al menos 1 en una barra
@@ -145,7 +145,7 @@ var playGame = function() {
   retardo = ((Math.random() * 5)+1);//para generar un retardo entre 1 y 5
   numClientes = numeroAleatorio(0,4);//para generar un numero de clientes entre 1 y 5
   frecuenciaCreacion = (Math.random() * 5) + 2;
-  board1.add(new Spawner(3,numClientes,frecuenciaCreacion,retardo));
+  board1.add(new Spawner(3,numClientes,frecuenciaCreacion,retardo));*/
 
   
   //----------------------
@@ -171,19 +171,26 @@ var playGame = function() {
 var winGame = function() {
   reiniciar();
   Game.desactivarBoard(1);
-  Game.setBoard(3,new MiTitleScreen("¡Has ganado!", 
+  
+  Game.setBoard(3,new Temporizador(1000, function(){
+                                GameManager.puntuacionActual = 0;
+                                Game.setBoard(3,new MiTitleScreen("¡Has ganado!", 
                                   "Pulsa espacio para otra partida",
                                   playGame));
+                                }));
 };
 
 var loseGame = function() {
-  console.log("EStoy llamando a losegame")
+ 
   reiniciar();
   Game.desactivarBoard(1);
   //Game.boards[1].activada = false;
-  Game.setBoard(3,new MiTitleScreen("¡Has perdido!", 
+  Game.setBoard(3,new Temporizador(1000, function(){
+                                  GameManager.puntuacionActual = 0;
+                                  Game.setBoard(3, new MiTitleScreen("¡Has perdido!", 
                                   "Pulsa espacio para otra partida",
                                   playGame));
+                                }));
 };
 
 
@@ -323,8 +330,38 @@ var Player = function(){
       }
 
       Game.keys['down'] = false;
-    }
-    else if(Game.keys['space']){// && this.reload < 0) {
+    }else if(Game.keys['left']) { 
+      this.x += (-2);
+      console.log("has pulsado izquierda");
+     /* if(this.posicionActual == this.posiciones.length-1){
+
+        this.x = this.posiciones[0].x;
+        this.y = this.posiciones[0].y;
+        this.posicionActual = 0;
+      }else{
+        
+        this.x = this.posiciones[this.posicionActual+1].x;
+        this.y = this.posiciones[this.posicionActual+1].y;
+        this.posicionActual++;
+      }*/
+
+      Game.keys['left'] = false;
+    }else if(Game.keys['right']) { 
+      this.x += (2);
+      /*if(this.posicionActual == this.posiciones.length-1){
+
+        this.x = this.posiciones[0].x;
+        this.y = this.posiciones[0].y;
+        this.posicionActual = 0;
+      }else{
+        
+        this.x = this.posiciones[this.posicionActual+1].x;
+        this.y = this.posiciones[this.posicionActual+1].y;
+        this.posicionActual++;
+      }*/
+
+      Game.keys['right'] = false;
+    }else if(Game.keys['space']){//COMPROBAR QUE ESTE EN LAS POSICIONES DE INICIO DE LA BARRA PARA PODER SERVIR, SI NO NANAI
       Game.keys['space'] = false;
       this.reload = this.reloadTime;
 

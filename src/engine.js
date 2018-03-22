@@ -90,7 +90,7 @@ var Game = new function() {
 
   // Handle Input
   //var KEY_CODES = { 37:'left', 39:'right', 32 :'fire' }; las originales del AlienInvasion
-  var KEY_CODES = { 38:'up', 40:'down', 32 :'space' };
+  var KEY_CODES = { 38:'up', 40:'down', 32 :'space', 37:'left', 39:'right' };
   //Arriba (38), Abajo (40) y Espacio (32)
   this.keys = {};
 
@@ -248,11 +248,8 @@ var TitleScreen = function TitleScreen(title,subtitle,callback) {
 
 var MiTitleScreen = function MiTitleScreen(title,subtitle,callback) {
   var up = false;
-  var currTime = new Date().getTime();
-  var tiempoEspera = currTime+1000;
 
   this.step = function(dt) {
-    
     if(!Game.keys['space']) up = true;
 
     if(Game.keys['space']) console.log("pulsado espacio en titlescreen")
@@ -265,40 +262,51 @@ var MiTitleScreen = function MiTitleScreen(title,subtitle,callback) {
 
   this.draw = function(ctx) {
   
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(0, 0, Game.width, Game.height);
+
+    // Foreground
+    ctx.fillStyle = "#FFFFFF";
+
+    ctx.font = "68px 'Rye'";
+    var measure = ctx.measureText(title);  
+    ctx.fillText(title,Game.width/2 - measure.width/2,Game.height/2);
+
+    ctx.font = "20px 'Rye'";
+    var measure2 = ctx.measureText(subtitle);
+    ctx.fillText(subtitle,Game.width/2 - measure2.width/2,Game.height/2 + 50);
+
+
+    var puntuacionMax = GameManager.puntuacionMaxima.toString();
+    var tupuntuacion  = "Tu puntuacion maxima es: " + puntuacionMax;
+    ctx.font = "20px 'Rye'";
+    var measure3 = ctx.measureText(tupuntuacion);
+    ctx.fillText(tupuntuacion,Game.width/2 - measure3.width/2,Game.height/2 + 100);
   
-    if(currTime >= tiempoEspera){
-      // Background
-      GameManager.puntuacionActual = 0;
-      ctx.fillStyle = "#000000";
-      ctx.fillRect(0, 0, Game.width, Game.height);
-
-      // Foreground
-      ctx.fillStyle = "#FFFFFF";
-
-      ctx.font = "68px 'Rye'";
-      var measure = ctx.measureText(title);  
-      ctx.fillText(title,Game.width/2 - measure.width/2,Game.height/2);
-
-      ctx.font = "20px 'Rye'";
-      var measure2 = ctx.measureText(subtitle);
-      ctx.fillText(subtitle,Game.width/2 - measure2.width/2,Game.height/2 + 50);
-
-
-      var puntuacionMax = GameManager.puntuacionMaxima.toString();
-      var tupuntuacion  = "Tu puntuacion maxima es: " + puntuacionMax;
-      ctx.font = "20px 'Rye'";
-      var measure3 = ctx.measureText(tupuntuacion);
-      ctx.fillText(tupuntuacion,Game.width/2 - measure3.width/2,Game.height/2 + 100);
-    }else{
-      currTime = new Date().getTime();
-      /*console.log("tiempoact "+currTime);
-      console.log("tiempo espera "+tiempoEspera);*/
-    }
     
     
 
   };
 };//TitleScreen
+
+//---------------------------------------------------------------------------------------------------------------------------------
+
+
+var Temporizador = function Temporizador(tiempoAEsperar,callback) {
+  var currTime = new Date().getTime();
+  var tiempoEspera = currTime+tiempoAEsperar;
+
+  this.step = function(dt) {
+    if((currTime >= tiempoEspera) /*&& callback*/){
+      callback();
+    }else{
+      currTime = new Date().getTime();
+    }
+    
+  };
+
+  this.draw = function(ctx) {};
+};//Temporizador
 
 //---------------------------------------------------------------------------------------------------------------------------------
 
