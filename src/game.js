@@ -293,10 +293,16 @@ var Player = function(){
                     {x:389, y:281},
                     {x:421, y:377}];
 
+  this.posicionesIzq = [{x:100, y:90},
+                    {x:90, y:185},
+                    {x:80, y:281},
+                    {x:70, y:377}];
+
   //el sprite necesita saber unas coordenadas donde dibujarse de primeras
   this.x = this.posiciones[0].x;
   this.y = this.posiciones[0].y;
   this.posicionActual = 0;
+  this.estaParaServir = true;
 
   this.setup('camarero'); //setup(sprite, props)
 
@@ -314,16 +320,20 @@ var Player = function(){
 
       seHaMovido = true;
  
-      if(this.posicionActual == 0){
+      if(this.posicionActual == 0){ //si está en la barra de arriba del todo
+
         this.x = this.posiciones[this.posiciones.length-1].x;
         this.y = this.posiciones[this.posiciones.length-1].y;
         this.posicionActual = this.posiciones.length-1;
+        
       }else{
         
         this.x = this.posiciones[this.posicionActual-1].x;
         this.y = this.posiciones[this.posicionActual-1].y;
         this.posicionActual = this.posicionActual-1;
       }
+
+      this.estaParaServir = true;
 
       Game.keys['up'] = false;
        
@@ -332,7 +342,7 @@ var Player = function(){
 
       seHaMovido = true;
 
-      if(this.posicionActual == this.posiciones.length-1){
+      if(this.posicionActual == this.posiciones.length-1){ //si está en la barra de abajo del todo
 
         this.x = this.posiciones[0].x;
         this.y = this.posiciones[0].y;
@@ -344,12 +354,23 @@ var Player = function(){
         this.posicionActual++;
       }
 
+      this.estaParaServir = true;
+
       Game.keys['down'] = false;
     }else if(Game.keys['left']) { 
 
-      seHaMovido = true;
+      if(this.estaParaServir){
+        this.estaParaServir = false;
+      }
 
-      this.x += (-2);
+      if( (this.posicionActual == 0 && this.x > 100) ||
+          (this.posicionActual == 1 && this.x > 70) ||
+          (this.posicionActual == 2 && this.x > 40) ||
+          (this.posicionActual == 3 && this.x > 8) ){
+            this.x += (-5); 
+            //dejamos que vaya para la izquierda si, en su respectiva barra, no se ha pasado de cierta coordenada x
+      }
+      
       console.log("has pulsado izquierda");
      /* if(this.posicionActual == this.posiciones.length-1){
 
@@ -366,9 +387,24 @@ var Player = function(){
       Game.keys['left'] = false;
     }else if(Game.keys['right']) { 
 
-      seHaMovido = true;
+      /*if(!this.estaParaServir){
+        this.estaParaServir = true;
+      }*/
 
-      this.x += (2);
+      
+      if( (this.posicionActual == 0 && this.x < this.posiciones[0].x) ||
+          (this.posicionActual == 1 && this.x < this.posiciones[1].x) ||
+          (this.posicionActual == 2 && this.x < this.posiciones[2].x) ||
+          (this.posicionActual == 3 && this.x < this.posiciones[3].x) ){
+            this.x += (5); 
+            //dejamos que vaya para la derecha si, en su respectiva barra, no se ha pasado de cierta coordenada x
+      }
+      else{
+        //si no dejo que se haya movido a la derecha en el if, es porque aqui en el else
+        //significa que, esté en la barra que esté, ha vuelto a llegar a su posicion de servir
+        this.estaParaServir = true;
+      }
+
       /*if(this.posicionActual == this.posiciones.length-1){
 
         this.x = this.posiciones[0].x;
@@ -392,13 +428,17 @@ var Player = function(){
       //var clonCerveza = Object.create(Beer.prototype, { 'x':{value: 100}, 'y':{value:100}, 'vx':{value: -30}});
       //var clonCerveza = Object.create(Beer.prototype);
      // console.log(this.board);
-      this.board.add(new Beer(this.x-12, this.y+10, 100, true));
 
-      var audio = new Audio('sounds/sirve_cerveza.mp3');
-      audio.play();
+      if(this.estaParaServir){
+        this.board.add(new Beer(this.x-12, this.y+10, 100, true));
+
+        var audio = new Audio('sounds/sirve_cerveza.mp3');
+        audio.play();
 
 
-      GameManager.numJarrasGeneradas++;
+        GameManager.numJarrasGeneradas++;
+      }
+      
     }
 
     if(seHaMovido){
