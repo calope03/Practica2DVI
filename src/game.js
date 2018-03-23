@@ -47,7 +47,11 @@ var canvas;
 var VIDAS = 3;
 //var spriteClienteAleatorio = spritesClientes[numeroAleatorio(0, spritesClientes.length-1)];
 
-
+audio_principal = new Audio('sounds/musica_fondo.mp3'); 
+audio_principal.addEventListener('ended', function() {
+    this.currentTime = 0;
+    this.play();
+}, false);
 
 //---------------------------------------------------------------------------------------------------------------------------------
 
@@ -63,6 +67,10 @@ var startGame = function() {
     Game.setBoard(1,new Starfield(50,0.6,100));
     Game.setBoard(2,new Starfield(100,1.0,50));
   }*/  
+
+  var audio = new Audio('sounds/comienzo.mp3');
+  audio.play();
+
   Game.setBoard(3,new TitleScreen("Mini Tapper", 
                                   "Pulsa la barra espaciadora para empezar",
                                   playGame));
@@ -87,6 +95,8 @@ var generaDeadzones = function(board){
 
 var playGame = function() {
   Game.keys['space'] = false;
+
+  audio_principal.play();
 
   Game.desactivarBoard(3);
 /******************************************************************************************************/
@@ -298,8 +308,11 @@ var Player = function(){
   */
   this.step = function(dt) { 
 
+    var seHaMovido = false;
 
     if(Game.keys['up']) { 
+
+      seHaMovido = true;
  
       if(this.posicionActual == 0){
         this.x = this.posiciones[this.posiciones.length-1].x;
@@ -317,6 +330,8 @@ var Player = function(){
     }
     else if(Game.keys['down']) { 
 
+      seHaMovido = true;
+
       if(this.posicionActual == this.posiciones.length-1){
 
         this.x = this.posiciones[0].x;
@@ -331,6 +346,9 @@ var Player = function(){
 
       Game.keys['down'] = false;
     }else if(Game.keys['left']) { 
+
+      seHaMovido = true;
+
       this.x += (-2);
       console.log("has pulsado izquierda");
      /* if(this.posicionActual == this.posiciones.length-1){
@@ -347,6 +365,9 @@ var Player = function(){
 
       Game.keys['left'] = false;
     }else if(Game.keys['right']) { 
+
+      seHaMovido = true;
+
       this.x += (2);
       /*if(this.posicionActual == this.posiciones.length-1){
 
@@ -372,7 +393,17 @@ var Player = function(){
       //var clonCerveza = Object.create(Beer.prototype);
      // console.log(this.board);
       this.board.add(new Beer(this.x-12, this.y+10, 100, true));
+
+      var audio = new Audio('sounds/sirve_cerveza.mp3');
+      audio.play();
+
+
       GameManager.numJarrasGeneradas++;
+    }
+
+    if(seHaMovido){
+      var audio = new Audio('sounds/movimiento_camarero.mp3');
+      audio.play();
     }
 
     var objetoColisionado = this.board.collide(this,OBJECT_DRINK);
@@ -380,6 +411,9 @@ var Player = function(){
       console.log("cerveza es colisionada por camarero") //para comprobar que la colision es correcta
       objetoColisionado.hit(this.damage); 
       //esto borra la bebida (lo que ha detectado que colisiona con el camarero)
+
+      var audio = new Audio('sounds/recoge_cerveza.mp3');
+      audio.play();
       
       //this.board.remove(this); //y esto borraria al camarero, pero no queremos eso!
 
@@ -614,11 +648,19 @@ var GameManager = new function(){ //asi seria Singleton?
     }
    
     if(this.vidasDisponibles == 0){
+      audio_principal.pause();
+      audio_principal.currentTime = 0;
+      var audio = new Audio('sounds/game_over.mp3');
+      audio.play();
       loseGame();
     }
 
     //si no quedan clientes pendientes de servir y no quedan jarras vacias por recoger, ganamos
     if(this.numClientesServidos == this.numTotalClientes && this.numJarrasGeneradas === 0) {
+      audio_principal.pause();
+      audio_principal.currentTime = 0;
+      var audio = new Audio('sounds/comienzo.mp3');
+      audio.play();
       winGame();
     }
   }
@@ -631,10 +673,14 @@ var GameManager = new function(){ //asi seria Singleton?
   this.clientePerdido = function(){
     this.numClientesServidos++;
     this.vidasDisponibles--;
+    var audio = new Audio('sounds/pierde_vida.mp3');
+    audio.play();
   }
   this.jarraPerdida = function(){
     this.numJarrasGeneradas--;
     this.vidasDisponibles--;
+    var audio = new Audio('sounds/pierde_vida.mp3');
+    audio.play();
   }
 
       

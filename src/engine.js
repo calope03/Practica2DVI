@@ -253,7 +253,6 @@ var MiTitleScreen = function MiTitleScreen(title,subtitle,callback) {
     if(!Game.keys['space']) up = true;
 
     if(Game.keys['space']) console.log("pulsado espacio en titlescreen")
-    //en la titlescreen de win o lose, no detecta la pulsacion :(
     
     if(up && Game.keys['space'] && callback){ 
       callback();
@@ -278,7 +277,7 @@ var MiTitleScreen = function MiTitleScreen(title,subtitle,callback) {
 
 
     var puntuacionMax = GameManager.puntuacionMaxima.toString();
-    var tupuntuacion  = "Tu puntuacion maxima es: " + puntuacionMax;
+    var tupuntuacion  = "Tu puntuación máxima es: " + puntuacionMax;
     ctx.font = "20px 'Rye'";
     var measure3 = ctx.measureText(tupuntuacion);
     ctx.fillText(tupuntuacion,Game.width/2 - measure3.width/2,Game.height/2 + 100);
