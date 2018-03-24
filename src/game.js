@@ -19,7 +19,8 @@ var sprites = {
  6: {sx: 495, sy: 293, w: 16, h: 18, frames: 1},
  7: {sx: 511, sy: 293, w: 16, h: 18, frames: 1},
  8: {sx: 527, sy: 293, w: 16, h: 18, frames: 1},
- 9: {sx: 543, sy: 293, w: 16, h: 18, frames: 1}
+ 9: {sx: 543, sy: 293, w: 16, h: 18, frames: 1},
+ propina: {sx: 516, sy: 318, w: 28, h: 20, frames: 1}
 };//sprites
 
 var posicionesDeadzoneIzq = [{x:90, y:50}, {x:60, y:160}, {x: 30, y: 250}, {x: -2, y: 350}];
@@ -38,7 +39,8 @@ var velocidades = [30, 35, 40, 45];
 var OBJECT_PLAYER = 1,
     OBJECT_DRINK = 2,
     OBJECT_DEADZONE = 4,
-    OBJECT_CLIENT = 8;
+    OBJECT_CLIENT = 8,
+    OBJECT_PROPINA = 16;
     //OBJECT_PLAYER_PROJECTILE = 2,
     //OBJECT_POWERUP = 16;
 
@@ -137,7 +139,7 @@ var playGame = function() {
   board1.add(new Spawner(0,numClientes,frecuenciaCreacion,retardo));
   //board1.add(new Metrics());
   //numBarra, numClientes, frecuenciaCreacion, retardo
-/*
+
   //BARRA 2
   retardo = ((Math.random() * 5)+1);//para generar un retardo entre 1 y 5
   numClientes = numeroAleatorio(0,4);//para generar un numero de clientes entre 0 y 4  ya que sirve con asegurarse que al menos 1 en una barra
@@ -155,7 +157,7 @@ var playGame = function() {
   retardo = ((Math.random() * 5)+1);//para generar un retardo entre 1 y 5
   numClientes = numeroAleatorio(0,4);//para generar un numero de clientes entre 1 y 5
   frecuenciaCreacion = (Math.random() * 5) + 2;
-  board1.add(new Spawner(3,numClientes,frecuenciaCreacion,retardo));*/
+  board1.add(new Spawner(3,numClientes,frecuenciaCreacion,retardo));
 
   
   //----------------------
@@ -372,18 +374,7 @@ var Player = function(){
       }
       
       console.log("has pulsado izquierda");
-     /* if(this.posicionActual == this.posiciones.length-1){
-
-        this.x = this.posiciones[0].x;
-        this.y = this.posiciones[0].y;
-        this.posicionActual = 0;
-      }else{
-        
-        this.x = this.posiciones[this.posicionActual+1].x;
-        this.y = this.posiciones[this.posicionActual+1].y;
-        this.posicionActual++;
-      }*/
-
+     
       Game.keys['left'] = false;
     }else if(Game.keys['right']) { 
 
@@ -405,29 +396,12 @@ var Player = function(){
         this.estaParaServir = true;
       }
 
-      /*if(this.posicionActual == this.posiciones.length-1){
-
-        this.x = this.posiciones[0].x;
-        this.y = this.posiciones[0].y;
-        this.posicionActual = 0;
-      }else{
-        
-        this.x = this.posiciones[this.posicionActual+1].x;
-        this.y = this.posiciones[this.posicionActual+1].y;
-        this.posicionActual++;
-      }*/
-
       Game.keys['right'] = false;
     }else if(Game.keys['space']){//COMPROBAR QUE ESTE EN LAS POSICIONES DE INICIO DE LA BARRA PARA PODER SERVIR, SI NO NANAI
       Game.keys['space'] = false;
       this.reload = this.reloadTime;
 
-      //console.log("has pulsado espacio");
-      //var clonCerveza = Object.create(Beer);
-
-      //var clonCerveza = Object.create(Beer.prototype, { 'x':{value: 100}, 'y':{value:100}, 'vx':{value: -30}});
-      //var clonCerveza = Object.create(Beer.prototype);
-     // console.log(this.board);
+      
 
       if(this.estaParaServir){
         this.board.add(new Beer(this.x-12, this.y+10, 100, true));
@@ -462,6 +436,14 @@ var Player = function(){
       //Game.setBoard(1, this.board);
       GameManager.numJarrasGeneradas--;
       GameManager.puntuacionActual += 100;
+    }
+
+    var objetoColisionado = this.board.collide(this,OBJECT_PROPINA);
+
+    if(objetoColisionado) {
+
+      objetoColisionado.hit(this.damage); 
+      GameManager.puntuacionActual += 1500;
     }
 
     this.reload-=dt;
@@ -564,6 +546,7 @@ var Client = function(x, y, vx, nombreSprite){
   this.x = x;
   this.y = y;
   this.vx = vx; 
+  this.dejaraPropina = numeroAleatorio(0,1);
 
   this.setup(nombreSprite); //setup(sprite, props)
 
@@ -578,13 +561,20 @@ var Client = function(x, y, vx, nombreSprite){
       if(objetoColisionado instanceof Beer){
         objetoColisionado.hit(this.damage); 
         //esto borra la bebida (lo que ha detectado que colisiona con el cliente)
+        //console.log("dejara propina"+this.dejaraPropina);
         
         this.board.remove(this); //y esto borra al cliente
-
+        if(this.dejaraPropina==1){
+          this.board.add(new Propina(this.x, objetoColisionado.y));
+          GameManager.numJarrasGeneradas--;
+        }else{
+          this.board.add(new Beer(objetoColisionado.x, objetoColisionado.y, this.vx, false));
+        }
         //this.board.add(new Beer(this.x, this.y, 30, false));
-        this.board.add(new Beer(objetoColisionado.x, objetoColisionado.y, this.vx, false));
+        
         GameManager.servir();
         GameManager.puntuacionActual += 50;
+        
       }else if(objetoColisionado instanceof DeadZone){
         console.log("cliente choca contra deadzone");
         //collision.hit(this.damage); 
@@ -606,6 +596,19 @@ Client.prototype.type = OBJECT_CLIENT;
 
 //---------------------------------------------------------------------------------------------------------------------------------
 
+var Propina = function(mix, miy){
+
+  this.setup('propina', {x:mix, y:miy});
+
+  this.step = function(dt){}
+
+}//Client
+
+Propina.prototype = new Sprite();
+Propina.prototype.type = OBJECT_PROPINA;
+
+//---------------------------------------------------------------------------------------------------------------------------------
+
 var Spawner = function(numBarra, numClientes, frecuenciaCreacion, retardo){
   this.primero=false;//para ver cuando se crea el primer cliente
   this.tiempo = 0; //empezamos en tiempo 0
@@ -614,34 +617,33 @@ var Spawner = function(numBarra, numClientes, frecuenciaCreacion, retardo){
   this.numClientes = numClientes;
   var spriteClienteAleatorio = spritesClientes[numeroAleatorio(0, spritesClientes.length-1)];
   var velocidadAleatoria = velocidades[numeroAleatorio(0, velocidades.length-1)];
-  this.cliente = new Client(coordenadasInicioBarras[numBarra].x, coordenadasInicioBarras[numBarra].y, velocidadAleatoria, spriteClienteAleatorio);
-  GameManager.sumarClientes(this.numClientes);;
-}//Spawner
+  GameManager.sumarClientes(this.numClientes);
 
-Spawner.prototype.draw = function(){}
-Spawner.prototype.step = function(dt){
- 
-  if(this.primero){
+  this.step = function(dt){
+    if(this.primero){
       this.tiempo = this.tiempo + dt;
       if(this.numClientes > 0 && this.tiempo >= this.frecuenciaCreacion){
         this.tiempo = 0;
-        this.board.add(Object.create(this.cliente));
+        this.board.add(new Client(coordenadasInicioBarras[numBarra].x, coordenadasInicioBarras[numBarra].y, velocidadAleatoria, spriteClienteAleatorio));
         this.numClientes--;
       }
-  }
-  else {
-    
-    if(this.tiempo > this.retardo && this.numClientes > 0){
-      this.primero = true;
-      this.tiempo = 0;
-      this.board.add(Object.create(this.cliente));
-      this.numClientes--;
     }
-    else
-      this.tiempo = this.tiempo + dt;
+    else {
+      
+      if(this.tiempo > this.retardo && this.numClientes > 0){
+        this.primero = true;
+        this.tiempo = 0;
+        this.board.add(new Client(coordenadasInicioBarras[numBarra].x, coordenadasInicioBarras[numBarra].y, velocidadAleatoria, spriteClienteAleatorio));
+        this.numClientes--;
+      }
+      else
+        this.tiempo = this.tiempo + dt;
+    }
   }
+  this.draw = function(){}
+}//Spawner
 
-}
+
 
 //Para imprimir informacion util en el desarrollo: iteraciones, tiempo, computacion...
 
