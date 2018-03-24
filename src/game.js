@@ -29,6 +29,7 @@ var posicionesDeadzoneDer = [{x:335, y:60}, {x:365, y:160}, {x: 395, y: 260}, {x
 var coordenadasInicioBarras = [{x:100, y:90}, {x:80, y:190}, {x: 60, y: 290}, {x: 30, y: 380}];
 
 var coordenadasCorazon= [{x:10, y:10}, {x:40, y:10}, {x: 70, y: 10}];
+var VIDAS = 3;
 var coordenadasPuntuacion1= [{x: 480, y: 10}, {x: 460, y: 10}, {x: 440, y: 10}, {x:420, y:10}, {x:400, y:10}, {x:380, y:10}];
 
 
@@ -46,7 +47,7 @@ var OBJECT_PLAYER = 1,
 
 var canvas;
 
-var VIDAS = 3;
+
 //var spriteClienteAleatorio = spritesClientes[numeroAleatorio(0, spritesClientes.length-1)];
 
 audio_principal = new Audio('sounds/musica_fondo.mp3'); 
@@ -304,7 +305,7 @@ var Player = function(){
   this.x = this.posiciones[0].x;
   this.y = this.posiciones[0].y;
   this.posicionActual = 0;
-  this.estaParaServir = true;
+  this.listoParaServir = true;
 
   this.setup('camarero'); //setup(sprite, props)
 
@@ -335,7 +336,7 @@ var Player = function(){
         this.posicionActual = this.posicionActual-1;
       }
 
-      this.estaParaServir = true;
+      this.listoParaServir = true;
 
       Game.keys['up'] = false;
        
@@ -356,13 +357,13 @@ var Player = function(){
         this.posicionActual++;
       }
 
-      this.estaParaServir = true;
+      this.listoParaServir = true;
 
       Game.keys['down'] = false;
     }else if(Game.keys['left']) { 
 
-      if(this.estaParaServir){
-        this.estaParaServir = false;
+      if(this.listoParaServir){
+        this.listoParaServir = false;
       }
 
       if( (this.posicionActual == 0 && this.x > 100) ||
@@ -378,8 +379,8 @@ var Player = function(){
       Game.keys['left'] = false;
     }else if(Game.keys['right']) { 
 
-      /*if(!this.estaParaServir){
-        this.estaParaServir = true;
+      /*if(!this.listoParaServir){
+        this.listoParaServir = true;
       }*/
 
       
@@ -393,7 +394,7 @@ var Player = function(){
       else{
         //si no dejo que se haya movido a la derecha en el if, es porque aqui en el else
         //significa que, esté en la barra que esté, ha vuelto a llegar a su posicion de servir
-        this.estaParaServir = true;
+        this.listoParaServir = true;
       }
 
       Game.keys['right'] = false;
@@ -403,7 +404,7 @@ var Player = function(){
 
       
 
-      if(this.estaParaServir){
+      if(this.listoParaServir){
         this.board.add(new Beer(this.x-12, this.y+10, 100, true));
 
         var audio = new Audio('sounds/sirve_cerveza.mp3');
@@ -421,7 +422,8 @@ var Player = function(){
     }
 
     var objetoColisionado = this.board.collide(this,OBJECT_DRINK);
-    if(objetoColisionado) {
+    if(objetoColisionado && this.listoParaServir) {
+      //el camarero solo puede recoger bebidas vacias estando bien colocado
       console.log("cerveza es colisionada por camarero") //para comprobar que la colision es correcta
       objetoColisionado.hit(this.damage); 
       //esto borra la bebida (lo que ha detectado que colisiona con el camarero)
@@ -439,14 +441,14 @@ var Player = function(){
     }
 
     var objetoColisionado = this.board.collide(this,OBJECT_PROPINA);
-
     if(objetoColisionado) {
-
       objetoColisionado.hit(this.damage); 
       GameManager.puntuacionActual += 1500;
+      var audio = new Audio('sounds/propina_recogida.mp3');
+      audio.play();
     }
 
-    this.reload-=dt;
+    //this.reload-=dt; no nos sirve para nada creo
     
       
 
@@ -548,32 +550,73 @@ var Client = function(x, y, vx, nombreSprite){
   this.vx = vx; 
   this.dejaraPropina = numeroAleatorio(0,1);
 
+  this.bebiendo = false;
+  const TIEMPO_PARA_BEBER = 4000; //o sea, 4 segundos
+  this.horaParaDejarDeBeber = 0;
+
   this.setup(nombreSprite); //setup(sprite, props)
+
+  this.cambioDeSentido = function(){
+    this.vx *= (-1);
+    if(this.vx <= 0){//si esta retrocediendo, es porque esta bebiendo
+      this.bebiendo = true;
+      this.horaParaDejarDeBeber = new Date().getTime() + TIEMPO_PARA_BEBER;
+    }
+    else{
+      this.bebiendo = false;
+      this.horaParaDejarDeBeber = 0;
+    }
+  }
 
   this.step = function(dt){
 
-    this.x += this.vx * dt;
-   // console.log("la velocidad del cleinte es:"+ this.vx);
+    //el cliente siempre se crea con vx positiva
+    /*if(this.bebiendo){
+      this.vx *= (-1); //si esta bebiendo entonces vx siempre negativa (le hacemos ir en sentido contrario)
+    }else{
+      this.vx *= (-1); //cuando cambie a que ha dejado de beber, volvemos a cambiarle el sentido
+    }*/
+
+    //quiero comprobar que si esta bebiendo y si ha pasado su tiempo de beber, que vuelva a avanzar
+    if(this.bebiendo){
+      var horaActual = new Date().getTime();
+      if(horaActual >= this.horaParaDejarDeBeber){
+        this.cambioDeSentido();
+      }
+    }
+
+    this.x += this.vx * dt; //el cliente se mueve (en un sentido o en el otro segun vx)
+   // console.log("la velocidad del cliente es:"+ this.vx);
+
     var objetoColisionado = this.board.collide(this,6);
 
     if(objetoColisionado) {
 
       if(objetoColisionado instanceof Beer){
-        objetoColisionado.hit(this.damage); 
-        //esto borra la bebida (lo que ha detectado que colisiona con el cliente)
-        //console.log("dejara propina"+this.dejaraPropina);
+
+        if(!this.bebiendo){ //solo si no está bebiendo es cuando puede reaccionar con una bebida llena
+          this.cambioDeSentido();
+          objetoColisionado.hit(this.damage); 
+          //esto borra la bebida (lo que ha detectado que colisiona con el cliente)
+          //GameManager.numJarrasGeneradas--; //esto cuenta solo cuando lo recoge el camarero
+          this.board.add(new Beer(objetoColisionado.x, objetoColisionado.y, -this.vx, false));
+        }
+        //si está "bebiendo" y se choca con una cerveza, no pasa nada y la cerveza sigue por la barra
+
         
-        this.board.remove(this); //y esto borra al cliente
-        if(this.dejaraPropina==1){
+        
+        //this.board.remove(this); //y esto borraría al cliente cuando colisiona con cerveza, pero ya no queremos que la cerveza borre al cliente
+        
+        /*if(this.dejaraPropina==1){
           this.board.add(new Propina(this.x, objetoColisionado.y));
           GameManager.numJarrasGeneradas--;
         }else{
           this.board.add(new Beer(objetoColisionado.x, objetoColisionado.y, this.vx, false));
-        }
+        }*/
+       
         //this.board.add(new Beer(this.x, this.y, 30, false));
         
-        GameManager.servir();
-        GameManager.puntuacionActual += 50;
+        
         
       }else if(objetoColisionado instanceof DeadZone){
         console.log("cliente choca contra deadzone");
@@ -582,12 +625,40 @@ var Client = function(x, y, vx, nombreSprite){
         
         this.board.remove(this); //y esto borra al cliente
 
-        GameManager.clientePerdido();
-      }
 
-    }
+        //nos aseguramos de que pasen cosas bonitas solo si choca con alguna deadzone
+        //pero de la izquierda, porque si es de una de la derecha no mola :P
 
-  }
+        //console.log("x de la deadzone = " + objetoColisionado.x);
+        var esDeadzoneIzq = false;
+        for(i = 0; i < posicionesDeadzoneIzq.length && !esDeadzoneIzq; i++){
+          if(objetoColisionado.x == posicionesDeadzoneIzq[i].x){
+            esDeadzoneIzq = true;
+          }
+        }
+
+        if(esDeadzoneIzq){ //el cliente desaparece y queda servido del todo
+          //if(this.dejaraPropina==1) console.log("ESTE DEJA PROPINA");
+          GameManager.servir();
+          GameManager.puntuacionActual += 50;
+          var audio = new Audio('sounds/cliente_servido.mp3');
+          audio.play();
+          if(this.dejaraPropina==1){
+            //this.board.add(new Propina(this.x, objetoColisionado.y));
+            this.board.add(new Propina(this.x+40, objetoColisionado.y+50));
+            var audio = new Audio('sounds/aparece_propina.mp3');
+            audio.play();
+          }
+        }
+        else{
+          GameManager.clientePerdido();
+        }
+
+      }//colision con alguna deadzone
+
+    }//if cliente ha colisionado con algo
+
+  }//step de Client
 
 }//Client
 
@@ -602,7 +673,7 @@ var Propina = function(mix, miy){
 
   this.step = function(dt){}
 
-}//Client
+}//Propina
 
 Propina.prototype = new Sprite();
 Propina.prototype.type = OBJECT_PROPINA;
@@ -700,7 +771,11 @@ var GameManager = new function(){ //asi seria Singleton?
     //si no quedan clientes pendientes de servir y no quedan jarras vacias por recoger, ganamos
     if(this.numClientesServidos == this.numTotalClientes && this.numJarrasGeneradas === 0) {
       audio_principal.pause();
-      audio_principal.currentTime = 0;
+      audio_principal.currentTime = 0; 
+      //estas 2 ultimas lineas de arriba paran la musica de fondo
+      //son iguales que las de if this vidas disponibles == 0
+      //asi que cuando limpiemos codigo lo movemos a una funcion
+
       var audio = new Audio('sounds/comienzo.mp3');
       audio.play();
       winGame();
