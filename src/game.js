@@ -35,7 +35,7 @@ var coordenadasPuntuacion1= [{x: 480, y: 10}, {x: 460, y: 10}, {x: 440, y: 10}, 
 
 
 var spritesClientes = ["cliente", "cliente2", "cliente3", "cliente4"];
-var velocidades = [30, 35, 40, 45];
+//var velocidades = [30, 35, 40, 45];
 
 var OBJECT_PLAYER = 1,
     OBJECT_DRINK = 2,
@@ -46,7 +46,8 @@ var OBJECT_PLAYER = 1,
     //OBJECT_POWERUP = 16;
 
 var canvas;
-
+var nivelSeleccionado = "nivel1";
+//si no se selecciona bien, al menos cargará los datos del nivel 1 por defecto
 
 //var spriteClienteAleatorio = spritesClientes[numeroAleatorio(0, spritesClientes.length-1)];
 
@@ -74,8 +75,8 @@ var startGame = function() {
   var audio = new Audio('sounds/comienzo.mp3');
   audio.play();
 
-  Game.setBoard(3,new TitleScreen("Mini Tapper", 
-                                  "Pulsa la barra espaciadora para empezar",
+  Game.setBoard(3,new TitleScreen("Mini Tapper",
+                                  "Pulsa 1, 2 ó 3 para elegir un nivel",
                                   playGame));
 };
 
@@ -97,7 +98,17 @@ var generaDeadzones = function(board){
 }
 
 var playGame = function() {
-  Game.keys['space'] = false;
+  //Game.keys['space'] = false;
+
+  if(Game.keys['1']) nivelSeleccionado = "nivel1";
+  else if(Game.keys['2']) nivelSeleccionado = "nivel2";
+  else if(Game.keys['3']) nivelSeleccionado = "nivel3";
+
+  Game.keys['1'] = false;
+  Game.keys['2'] = false;
+  Game.keys['3'] = false;
+
+  console.log("nivel elegido = " + nivelSeleccionado);
 
   audio_principal.play();
 
@@ -132,7 +143,19 @@ var playGame = function() {
   var numClientes;
   var frecuenciaCreacion;
   
+  for(i = 0; i < 4; ++i){
+    retardo = ((Math.random() * niveles[nivelSeleccionado].maxRetardo)+niveles[nivelSeleccionado].minRetardo);//para generar un retardo entre 1 y 5 con desimales
+    numClientes = numeroAleatorio(niveles[nivelSeleccionado].minClientesBarra,niveles[nivelSeleccionado].maxClientesBarra);//para generar un numero de clientes entre 1 y 5
+    frecuenciaCreacion = (Math.random() * niveles[nivelSeleccionado].maxFrecuenciaCreacion) + niveles[nivelSeleccionado].minFrecuenciaCreacion;
+    //console.log("AQUI " + frecuenciaCreacion);
+    //console.log("AQUI " + niveles[nivelSeleccionado].maxFrecuenciaCreacion);
+    
+    board1.add(new Spawner(i,numClientes,frecuenciaCreacion,retardo));
+  }
 
+  //1, 2, 3, 1 -> total = 7
+
+  /*
   //BARRA 1
   retardo = ((Math.random() * 5)+1);//para generar un retardo entre 1 y 5 con desimales
   numClientes = numeroAleatorio(1,4);//para generar un numero de clientes entre 1 y 5
@@ -159,6 +182,7 @@ var playGame = function() {
   numClientes = numeroAleatorio(0,4);//para generar un numero de clientes entre 1 y 5
   frecuenciaCreacion = (Math.random() * 5) + 2;
   board1.add(new Spawner(3,numClientes,frecuenciaCreacion,retardo));
+  */
 
   
   //----------------------
@@ -172,7 +196,6 @@ var playGame = function() {
 /******************************************************************************************************/
 
 
-//AQUI HAY QUE AÑADIR LO DE LA CAPA EXTRA PARA TAPAR LAS LATAS
   var board2 = new GameBoard();
   board2.add(new EscenarioFondo2());
   board2.add(new Salud());
@@ -686,31 +709,37 @@ var Spawner = function(numBarra, numClientes, frecuenciaCreacion, retardo){
   this.retardo = retardo;
   this.frecuenciaCreacion = frecuenciaCreacion;
   this.numClientes = numClientes;
+  console.log("La barra " + numBarra + " tiene de clientes " + this.numClientes);
   var spriteClienteAleatorio = spritesClientes[numeroAleatorio(0, spritesClientes.length-1)];
-  var velocidadAleatoria = velocidades[numeroAleatorio(0, velocidades.length-1)];
+  //var velocidadAleatoria = velocidades[numeroAleatorio(0, velocidades.length-1)];
+  var velocidadAleatoria = numeroAleatorio(niveles[nivelSeleccionado].minVelocidadCliente, niveles[nivelSeleccionado].maxVelocidadCliente)
   GameManager.sumarClientes(this.numClientes);
 
   this.step = function(dt){
     if(this.primero){
       this.tiempo = this.tiempo + dt;
+      //console.log("Barra " + numBarra + ": tiempo = " + this.tiempo + " frecuencia = " + this.frecuenciaCreacion);
       if(this.numClientes > 0 && this.tiempo >= this.frecuenciaCreacion){
         this.tiempo = 0;
+        console.log("Crea otro cliente de la barra " + numBarra);
         this.board.add(new Client(coordenadasInicioBarras[numBarra].x, coordenadasInicioBarras[numBarra].y, velocidadAleatoria, spriteClienteAleatorio));
         this.numClientes--;
       }
     }
-    else {
+    else { //aqui entra la primera vez
       
       if(this.tiempo > this.retardo && this.numClientes > 0){
         this.primero = true;
         this.tiempo = 0;
+        console.log("Crea primer cliente de la barra " + numBarra);
         this.board.add(new Client(coordenadasInicioBarras[numBarra].x, coordenadasInicioBarras[numBarra].y, velocidadAleatoria, spriteClienteAleatorio));
         this.numClientes--;
       }
       else
         this.tiempo = this.tiempo + dt;
     }
-  }
+  }//step
+
   this.draw = function(){}
 }//Spawner
 
@@ -769,6 +798,9 @@ var GameManager = new function(){ //asi seria Singleton?
     }
 
     //si no quedan clientes pendientes de servir y no quedan jarras vacias por recoger, ganamos
+    /*console.log("numClientesServidos = " + this.numClientesServidos);
+    console.log("numTotalClientes = " + this.numTotalClientes);
+    console.log("numJarrasGeneradas = " + this.numJarrasGeneradas);*/
     if(this.numClientesServidos == this.numTotalClientes && this.numJarrasGeneradas === 0) {
       audio_principal.pause();
       audio_principal.currentTime = 0; 
@@ -809,6 +841,7 @@ var GameManager = new function(){ //asi seria Singleton?
 
 window.addEventListener("load", function() {
   //Por aquí pasa solo una vez al arrancar el juego, y nada mas.
+
   Game.initialize("game",sprites,startGame);
 });
 

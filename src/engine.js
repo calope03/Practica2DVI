@@ -90,7 +90,7 @@ var Game = new function() {
 
   // Handle Input
   //var KEY_CODES = { 37:'left', 39:'right', 32 :'fire' }; las originales del AlienInvasion
-  var KEY_CODES = { 38:'up', 40:'down', 32 :'space', 37:'left', 39:'right' };
+  var KEY_CODES = { 38:'up', 40:'down', 32 :'space', 37:'left', 39:'right', 49:'1', 50:'2', 51:'3'};
   //Arriba (38), Abajo (40) y Espacio (32)
   this.keys = {};
 
@@ -215,6 +215,7 @@ var TitleScreen = function TitleScreen(title,subtitle,callback) {
 
   this.step = function(dt) {
     
+    /*
     if(!Game.keys['space']) up = true;
 
     if(Game.keys['space']) console.log("pulsado espacio en titlescreen")
@@ -223,6 +224,18 @@ var TitleScreen = function TitleScreen(title,subtitle,callback) {
     if(up && Game.keys['space'] && callback){
       callback();
     } 
+    */
+    
+    if(!Game.keys['1'] || !Game.keys['2'] || !Game.keys['3']) up = true;
+
+    if(Game.keys['1']) console.log("pulsado 1 en titlescreen");
+    else if(Game.keys['2']) console.log("pulsado 2 en titlescreen");
+    else if(Game.keys['3']) console.log("pulsado 3 en titlescreen");
+    //en la titlescreen de win o lose, no detecta la pulsacion :(
+    
+    if(up && (Game.keys['1'] || Game.keys['2'] || Game.keys['3']) && callback){
+      callback();
+    }
   };
 
   this.draw = function(ctx) {
