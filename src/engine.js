@@ -1,3 +1,10 @@
+/*
+DVI Practica 2 - GII - UCM Curso 2017/2018
+Alumnos:
+Cesar Godino Rodriguez
+Carmen Lopez Gonzalo 
+*/
+
 (function() {
     var lastTime = 0;
     var vendors = ['ms', 'moz', 'webkit', 'o'];
@@ -56,7 +63,9 @@ var Metrics = new function(){
     //alternativa usando toFixed aunque hay casos donde puede no redondear
     //de forma muy precisa como con 1,5550, que da 1,55 en vez de 1,56
   }
-}
+}//Metrics
+
+//---------------------------------------------------------------------------------------------------------------------------------
 
 
 var Game = new function() {                                                                 
@@ -85,13 +94,11 @@ var Game = new function() {
     }
 
     SpriteSheet.load(sprite_data,callback);
-  };
+  };//initialize
   
 
   // Handle Input
-  //var KEY_CODES = { 37:'left', 39:'right', 32 :'fire' }; las originales del AlienInvasion
   var KEY_CODES = { 38:'up', 40:'down', 32 :'space', 37:'left', 39:'right', 49:'1', 50:'2', 51:'3'};
-  //Arriba (38), Abajo (40) y Espacio (32)
   this.keys = {};
 
   this.setupInput = function() {
@@ -108,7 +115,7 @@ var Game = new function() {
        e.preventDefault();
       }
     },false);
-  };
+  };//setupInput
 
 
   var lastTime = new Date().getTime();
@@ -117,7 +124,6 @@ var Game = new function() {
   this.loop = function() {
     
     GameManager.compruebaEstado();
-    //console.log(GameManager);
     var curTime = new Date().getTime();
     requestAnimationFrame(Game.loop);
     var dt = (curTime - lastTime)/1000;
@@ -125,18 +131,17 @@ var Game = new function() {
 
     for(var i=0,len = boards.length;i<len;i++) {
       
-      if(boards[i] && boards[i].activada) {
-      //console.log(i + "holi" + boards[i].activada); 
+      if(boards[i] && boards[i].activada) { 
         boards[i].step(dt);
         boards[i].draw(Game.ctx);
       }
     }
     lastTime = curTime;
     Metrics.drawFPS(Game.ctx,(curTime - lastTime))
-  };
+  };//loop
   
   // Change an active game board
-  this.setBoard = function(num,board) { boards[num] = board; boards[num].activada = true; /*console.log(boards[num]);*/ };
+  this.setBoard = function(num,board) { boards[num] = board; boards[num].activada = true; };
 
   this.desactivarBoard = function(num){boards[num].activada = false;}
 
@@ -177,13 +182,17 @@ var Game = new function() {
     this.canvas.style.left="0px";
     this.canvas.style.top="0px";
 
-  };
+  };//setupMobile
 
 };//Game
 
 //---------------------------------------------------------------------------------------------------------------------------------
 
-
+/**
+ * Constructora de SpriteSheer. 
+ * Básicamente se encarga de cargar el archivo fuente de todos los sprites que usaremos
+ * y los dibuja a partir de las coordenadas indicadas en dicha fuente.
+ */
 var SpriteSheet = new function() {
   this.map = { }; 
 
@@ -206,37 +215,32 @@ var SpriteSheet = new function() {
   };//draw
 
   return this;
+
 };//SpriteSheet
 
 //---------------------------------------------------------------------------------------------------------------------------------
-
+/*
+Desde startGame se crea así la pantalla de títulos inicial con el título del juego 
+y nos indica con qué teclas se puede empezar. 
+Al acabar, llama a callback que es playGame actualmente. 
+*/
 var TitleScreen = function TitleScreen(title,subtitle,callback) {
   var up = false;
 
   this.step = function(dt) {
     
-    /*
-    if(!Game.keys['space']) up = true;
-
-    if(Game.keys['space']) console.log("pulsado espacio en titlescreen")
-    //en la titlescreen de win o lose, no detecta la pulsacion :(
-    
-    if(up && Game.keys['space'] && callback){
-      callback();
-    } 
-    */
-    
     if(!Game.keys['1'] || !Game.keys['2'] || !Game.keys['3']) up = true;
 
+    /*Para debugueo
     if(Game.keys['1']) console.log("pulsado 1 en titlescreen");
     else if(Game.keys['2']) console.log("pulsado 2 en titlescreen");
     else if(Game.keys['3']) console.log("pulsado 3 en titlescreen");
-    //en la titlescreen de win o lose, no detecta la pulsacion :(
+    */
     
     if(up && (Game.keys['1'] || Game.keys['2'] || Game.keys['3']) && callback){
       callback();
     }
-  };
+  };//step de TitleScreen
 
   this.draw = function(ctx) {
 
@@ -254,23 +258,33 @@ var TitleScreen = function TitleScreen(title,subtitle,callback) {
     ctx.font = "20px 'Rye'";
     var measure2 = ctx.measureText(subtitle);
     ctx.fillText(subtitle,Game.width/2 - measure2.width/2,Game.height/2 + 50);
-  };
+  };//draw de TitleScreen
+
 };//TitleScreen
 
 //---------------------------------------------------------------------------------------------------------------------------------
-
+/*
+Con esta pantalla de títulos se muestra el final del juego
+cuando hemos perdido o ganado la partida.
+Desde esta pantalla se puede volver a comenzar una nueva partida. 
+Antes de crear esta pantalla ya tenemos todas las capas (GameBoard) creadas 
+y las podamos activar y desactivar cuando es necesario (con GameManager, desde compruebaEstado())
+De ese modo, no ejecutarań ni su método step ni su método draw.
+*/
 var MiTitleScreen = function MiTitleScreen(title,subtitle,callback) {
   var up = false;
 
   this.step = function(dt) {
     if(!Game.keys['space']) up = true;
 
+    /*Para debugueo
     if(Game.keys['space']) console.log("pulsado espacio en titlescreen")
+    */
     
     if(up && Game.keys['space'] && callback){ 
       callback();
     } 
-  };
+  };//step
 
   this.draw = function(ctx) {
   
@@ -293,9 +307,9 @@ var MiTitleScreen = function MiTitleScreen(title,subtitle,callback) {
     ctx.font = "20px 'Rye'";
     var measure3 = ctx.measureText(tupuntuacion);
     ctx.fillText(tupuntuacion,Game.width/2 - measure3.width/2,Game.height/2 + 100);
+  };//draw
 
-  };
-};//TitleScreen
+};//MiTitleScreen
 
 //---------------------------------------------------------------------------------------------------------------------------------
 
@@ -305,15 +319,15 @@ var Temporizador = function Temporizador(tiempoAEsperar,callback) {
   var tiempoEspera = currTime+tiempoAEsperar;
 
   this.step = function(dt) {
-    if((currTime >= tiempoEspera) /*&& callback*/){
+    if(currTime >= tiempoEspera){
       callback();
     }else{
       currTime = new Date().getTime();
     }
-    
   };
 
   this.draw = function(ctx) {};
+
 };//Temporizador
 
 //---------------------------------------------------------------------------------------------------------------------------------
@@ -344,7 +358,7 @@ var GameBoard = function() {
     } else {
       return false;
     }
-  };
+  };//remove
 
   // Reset the list of removed objects
   this.resetRemoved = function() { this.removed = []; };
@@ -380,18 +394,15 @@ var GameBoard = function() {
   // Call step on all objects and them delete
   // any object that have been marked for removal
   this.step = function(dt) { 
-    //console.log("activada en step = " + this.activada);
     if(this.activada){
-      //console.log("wtf")
       this.resetRemoved();
       this.iterate('step',dt);
       this.finalizeRemoved();
     }
-  };
+  };//step
 
   // Draw all the objects
   this.draw= function(ctx) {
-    //console.log("activada en draw = " + this.activada);
     if(this.activada) this.iterate('draw',ctx);
   };
 
@@ -411,7 +422,7 @@ var GameBoard = function() {
        return col ? this : false;
       }
     });
-  };
+  };//collide
 
 
 };//GameBoard
@@ -424,7 +435,6 @@ Sprite.prototype.setup = function(sprite,props) {
   this.sprite = sprite;
   this.merge(props);
   this.frame = this.frame || 0;
-  //console.log(SpriteSheet.map['Pared'])
   this.w =  SpriteSheet.map[sprite].w;
   this.h =  SpriteSheet.map[sprite].h;
 };
@@ -441,207 +451,10 @@ Sprite.prototype.draw = function(ctx) {
   SpriteSheet.draw(ctx,this.sprite,this.x,this.y,this.frame);
 };
 
-Sprite.prototype.hit = function(damage) { //Aqui parece que no hace falta damage...
+Sprite.prototype.hit = function() {
   this.board.remove(this);
 };
 
 //Sprite
-
-//---------------------------------------------------------------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-var Level = function(levelData,callback) {
-  this.levelData = [];
-  for(var i =0; i<levelData.length; i++) {
-    this.levelData.push(Object.create(levelData[i]));
-  }
-  this.t = 0;
-  this.callback = callback;
-};
-
-Level.prototype.step = function(dt) {
-  var idx = 0, remove = [], curShip = null;
-
-  // Update the current time offset
-  this.t += dt * 1000;
-
-  //   Start, End,  Gap, Type,   Override
-  // [ 0,     4000, 500, 'step', { x: 100 } ]
-  while((curShip = this.levelData[idx]) && 
-        (curShip[0] < this.t + 2000)) {
-    // Check if we've passed the end time 
-    if(this.t > curShip[1]) {
-      remove.push(curShip);
-    } else if(curShip[0] < this.t) {
-      // Get the enemy definition blueprint
-      var enemy = enemies[curShip[3]],
-          override = curShip[4];
-
-      // Add a new enemy with the blueprint and override
-      this.board.add(new Enemy(enemy,override));
-
-      // Increment the start time by the gap
-      curShip[0] += curShip[2];
-    }
-    idx++;
-  }
-
-  // Remove any objects from the levelData that have passed
-  for(var i=0,len=remove.length;i<len;i++) {
-    var remIdx = this.levelData.indexOf(remove[i]);
-    if(remIdx != -1) this.levelData.splice(remIdx,1);
-  }
-
-  // If there are no more enemies on the board or in 
-  // levelData, this level is done
-  if(this.levelData.length === 0 && this.board.cnt[OBJECT_ENEMY] === 0) {
-    if(this.callback) this.callback();
-  }
-
-};
-
-Level.prototype.draw = function(ctx) { };
-
-//Level
-
-//---------------------------------------------------------------------------------------------------------------------------------
-
-
-var TouchControls = function() {
-
-  var gutterWidth = 10;
-  var unitWidth = Game.width/5;
-  var blockWidth = unitWidth-gutterWidth;
-
-  this.drawSquare = function(ctx,x,y,txt,on) {
-    ctx.globalAlpha = on ? 0.9 : 0.6;
-    ctx.fillStyle =  "#CCC";
-    ctx.fillRect(x,y,blockWidth,blockWidth);
-
-    ctx.fillStyle = "#FFF";
-    ctx.globalAlpha = 1.0;
-    ctx.font = "bold " + (3*unitWidth/4) + "px arial";
-
-    var txtSize = ctx.measureText(txt);
-
-    ctx.fillText(txt, 
-                 x+blockWidth/2-txtSize.width/2, 
-                 y+3*blockWidth/4+5);
-  };
-
-  this.draw = function(ctx) {
-    ctx.save();
-
-    var yLoc = Game.height - unitWidth;
-    this.drawSquare(ctx,gutterWidth,yLoc,"\u25C0", Game.keys['left']);
-    this.drawSquare(ctx,unitWidth + gutterWidth,yLoc,"\u25B6", Game.keys['right']);
-    this.drawSquare(ctx,4*unitWidth,yLoc,"A",Game.keys['fire']);
-
-    ctx.restore();
-  };
-
-  this.step = function(dt) { };
-
-  this.trackTouch = function(e) {
-    var touch, x;
-
-    e.preventDefault();
-    Game.keys['left'] = false;
-    Game.keys['right'] = false;
-    for(var i=0;i<e.targetTouches.length;i++) {
-      touch = e.targetTouches[i];
-      x = touch.pageX / Game.canvasMultiplier - Game.canvas.offsetLeft;
-      if(x < unitWidth) {
-        Game.keys['left'] = true;
-      } 
-      if(x > unitWidth && x < 2*unitWidth) {
-        Game.keys['right'] = true;
-      } 
-    }
-
-    if(e.type == 'touchstart' || e.type == 'touchend') {
-      for(i=0;i<e.changedTouches.length;i++) {
-        touch = e.changedTouches[i];
-        x = touch.pageX / Game.canvasMultiplier - Game.canvas.offsetLeft;
-        if(x > 4 * unitWidth) {
-          Game.keys['fire'] = (e.type == 'touchstart');
-        }
-      }
-    }
-  };
-
-  Game.canvas.addEventListener('touchstart',this.trackTouch,true);
-  Game.canvas.addEventListener('touchmove',this.trackTouch,true);
-  Game.canvas.addEventListener('touchend',this.trackTouch,true);
-
-  // For Android
-  Game.canvas.addEventListener('dblclick',function(e) { e.preventDefault(); },true);
-  Game.canvas.addEventListener('click',function(e) { e.preventDefault(); },true);
-
-  Game.playerOffset = unitWidth + 20;
-};//TouchControls
-
-//---------------------------------------------------------------------------------------------------------------------------------
-
-
-var GamePoints = function() {
-  Game.points = 0;
-
-  var pointsLength = 8;
-
-  this.draw = function(ctx) {
-    ctx.save();
-    ctx.font = "bold 18px arial";
-    ctx.fillStyle= "#FFFFFF";
-
-    var txt = "" + Game.points;
-    var i = pointsLength - txt.length, zeros = "";
-    while(i-- > 0) { zeros += "0"; }
-
-    ctx.fillText(zeros + txt,10,20);
-    ctx.restore();
-
-  };
-
-  this.step = function(dt) { };
-};//GamePoints
 
 //---------------------------------------------------------------------------------------------------------------------------------

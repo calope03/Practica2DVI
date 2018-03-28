@@ -1,15 +1,30 @@
+/*
+DVI Practica 2 - GII - UCM Curso 2017/2018
+Alumnos:
+Cesar Godino Rodriguez
+Carmen Lopez Gonzalo 
+*/
+
+/*
+DUDA: en teoría (casi) todos estos datos de arriba en vez de var 
+podrían ser perfectamente const, porque muchos no cambian nada durante la ejecucion.
+Lo mismo para los datos de datosniveles.js
+*/
+
 var sprites = {
+ fondoPrincipal: {sx: 0, sy: 480, w: 512, h: 480,frames: 1},
+ paredIzquierda: {sx: 0, sy: 0, w: 132, h: 480, frames: 1},
  camarero: { sx: 510, sy: 0, w: 55, h: 64, frames: 1 },
  cliente: { sx: 510, sy: 66, w: 32, h: 32, frames: 1 },
  cliente2: { sx: 512, sy: 164, w: 32, h: 32, frames: 1 },
  cliente3: { sx: 512, sy: 197, w: 32, h: 32, frames: 1 },
  cliente4: { sx: 512, sy: 230, w: 32, h: 32, frames: 1 },
- bebidallena: { sx: 496, sy: 106, w: 12, h: 25, frames: 1 },
- bebidavacia: { sx: 496, sy: 138, w: 12, h: 25, frames: 1 },
- deadzone: { sx: 512, sy: 235, w: 5, h: 70, frames: 1 }, //coge un trozo de la imagen en el que no hay nada, es un sprite "invisible"
- ParedIzda: {sx: 0, sy: 0, w: 132, h: 480, frames: 1},
- TapperGameplay: {sx: 0, sy: 480, w: 512, h: 480,frames: 1},
+ deadzone: { sx: 512, sy: 235, w: 5, h: 70, frames: 1 }, 
+ //deadzone coge un trozo de imagen sin nada dibujado, es un sprite "invisible"
+ bebidaLlena: { sx: 496, sy: 106, w: 12, h: 25, frames: 1 },
+ bebidaVacia: { sx: 496, sy: 138, w: 12, h: 25, frames: 1 },
  corazon: {sx: 514, sy: 264, w: 26, h: 23, frames: 1},
+ propina: {sx: 516, sy: 318, w: 28, h: 20, frames: 1},
  0: {sx: 397, sy: 293, w: 17, h: 19, frames: 1},
  1: {sx: 415, sy: 293, w: 16, h: 19, frames: 1},
  2: {sx: 431, sy: 293, w: 16, h: 18, frames: 1},
@@ -19,21 +34,17 @@ var sprites = {
  6: {sx: 495, sy: 293, w: 16, h: 18, frames: 1},
  7: {sx: 511, sy: 293, w: 16, h: 18, frames: 1},
  8: {sx: 527, sy: 293, w: 16, h: 18, frames: 1},
- 9: {sx: 543, sy: 293, w: 16, h: 18, frames: 1},
- propina: {sx: 516, sy: 318, w: 28, h: 20, frames: 1}
-};//sprites
+ 9: {sx: 543, sy: 293, w: 16, h: 18, frames: 1}
+};//sprites que usamos
 
 var spritesClientes = ["cliente", "cliente2", "cliente3", "cliente4"];
 
 var posicionesDeadzoneIzq = [{x:90, y:50}, {x:60, y:160}, {x: 30, y: 250}, {x: -2, y: 350}];
 var posicionesDeadzoneDer = [{x:335, y:60}, {x:365, y:160}, {x: 395, y: 260}, {x: 430, y: 350}];
 var coordenadasInicioBarras = [{x:100, y:90}, {x:80, y:190}, {x: 60, y: 290}, {x: 30, y: 380}];
-
 var coordenadasPuntuacion1= [{x: 480, y: 10}, {x: 460, y: 10}, {x: 440, y: 10}, {x:420, y:10}, {x:400, y:10}, {x:380, y:10}];
-
 var coordenadasCorazon= [{x:10, y:10}];
 //como minimo tiene que haber 1 vida, como maximo las que quepan en pantalla en cuanto a corazones
-
 
 var OBJECT_PLAYER = 1,
     OBJECT_DRINK = 2,
@@ -43,7 +54,7 @@ var OBJECT_PLAYER = 1,
 
 var canvas;
 var nivelSeleccionado = "nivel1";
-//si no se selecciona bien, al menos cargará los datos del nivel 1 por defecto
+//en caso de no asignarse bien, al menos cargará los datos del nivel 1 por defecto
 
 var audio_principal = new Audio('sounds/musica_fondo.mp3'); 
 audio_principal.addEventListener('ended', function() {
@@ -97,7 +108,22 @@ var configuraVidas = function(){
   }
 }
 
-var playGame = function() {
+var configuraSpawners = function(board1){
+  var retardo;
+  var numClientes;
+  var frecuenciaCreacion;
+  
+  //Configura el Spawner de cada barra
+  for(i = 0; i < 4; ++i){
+    retardo = ((Math.random() * niveles[nivelSeleccionado].maxRetardo)+niveles[nivelSeleccionado].minRetardo);//para generar un retardo (entre un minimo y maximo dado) con decimales
+    numClientes = numeroAleatorio(niveles[nivelSeleccionado].minClientesBarra,niveles[nivelSeleccionado].maxClientesBarra);//para generar un numero de clientes (entre un minimo y maximo dado)
+    frecuenciaCreacion = (Math.random() * niveles[nivelSeleccionado].maxFrecuenciaCreacion) + niveles[nivelSeleccionado].minFrecuenciaCreacion;
+    
+    board1.add(new Spawner(i,numClientes,frecuenciaCreacion,retardo));
+  }
+}
+
+var playGame = function(){
 
   if(Game.keys['1']) nivelSeleccionado = "nivel1";
   else if(Game.keys['2']) nivelSeleccionado = "nivel2";
@@ -108,21 +134,20 @@ var playGame = function() {
   Game.keys['2'] = false;
   Game.keys['3'] = false;
 
+  /*Para debugueo
   console.log("nivel elegido = " + nivelSeleccionado);
+  */
 
   configuraVidas();
   GameManager.numTotalClientes = 0;
   GameManager.vidasDisponibles = niveles[nivelSeleccionado].vidas;
-
   reproduceAudioPrincipal(true);
-
   Game.desactivarBoard(3);
 
   /******************************************************************************************************/
   /*                                        CAPA 0                                                      */
   /******************************************************************************************************/
   var board = new GameBoard();
-  //SpriteSheet.draw(Game.ctx,"TapperGameplay",0,0);
   board.add(new EscenarioFondo());
   Game.setBoard(0,board);
   /******************************************************************************************************/
@@ -130,65 +155,13 @@ var playGame = function() {
   /******************************************************************************************************/
   var board1 = new GameBoard();
   board1.add(new Player());
-  //Game.setBoard(1,board);
-  
-  GameManager.numTotalClientes = 0;
-  //console.log("A VER " + GameManager.numTotalClientes);
-  //OJO, esto tendrá que hacerlo Spawners. Se moverá esta linea.
 
-  //---------------------
-  //board.add(new Beer(310, 300, 60, true));
-  //Game.setBoard(1,board);
-
-  var retardo;
-  var numClientes;
-  var frecuenciaCreacion;
-  
-  for(i = 0; i < 4; ++i){
-    retardo = ((Math.random() * niveles[nivelSeleccionado].maxRetardo)+niveles[nivelSeleccionado].minRetardo);//para generar un retardo entre 1 y 5 con desimales
-    numClientes = numeroAleatorio(niveles[nivelSeleccionado].minClientesBarra,niveles[nivelSeleccionado].maxClientesBarra);//para generar un numero de clientes entre 1 y 5
-    frecuenciaCreacion = (Math.random() * niveles[nivelSeleccionado].maxFrecuenciaCreacion) + niveles[nivelSeleccionado].minFrecuenciaCreacion;
-    
-    board1.add(new Spawner(i,numClientes,frecuenciaCreacion,retardo));
-  }
-
-  /*
-  //BARRA 1
-  retardo = ((Math.random() * 5)+1);//para generar un retardo entre 1 y 5 con desimales
-  numClientes = numeroAleatorio(1,4);//para generar un numero de clientes entre 1 y 5
-  frecuenciaCreacion = (Math.random() * 5) + 3;
-  board1.add(new Spawner(0,numClientes,frecuenciaCreacion,retardo));
-  //board1.add(new Metrics());
-  //numBarra, numClientes, frecuenciaCreacion, retardo
-
-  //BARRA 2
-  retardo = ((Math.random() * 5)+1);//para generar un retardo entre 1 y 5
-  numClientes = numeroAleatorio(0,4);//para generar un numero de clientes entre 0 y 4  ya que sirve con asegurarse que al menos 1 en una barra
-  frecuenciaCreacion = (Math.random() * 5) + 2;
-  board1.add(new Spawner(1,numClientes,frecuenciaCreacion,retardo));
-
-  //BARRA 3
-  retardo = ((Math.random() * 5)+1);//para generar un retardo entre 1 y 5
-  numClientes = numeroAleatorio(0,4);//para generar un numero de clientes entre 1 y 5
-  frecuenciaCreacion = (Math.random() * 5) + 2;
-  board1.add(new Spawner(2,numClientes,frecuenciaCreacion,retardo));
-
-
-  //BARRA 4
-  retardo = ((Math.random() * 5)+1);//para generar un retardo entre 1 y 5
-  numClientes = numeroAleatorio(0,4);//para generar un numero de clientes entre 1 y 5
-  frecuenciaCreacion = (Math.random() * 5) + 2;
-  board1.add(new Spawner(3,numClientes,frecuenciaCreacion,retardo));
-  */
-
+  configuraSpawners(board1);
   generaDeadzones(board1);
   Game.setBoard(1,board1);
-
   /******************************************************************************************************/
   /*                                        CAPA 2                                                      */
   /******************************************************************************************************/
-
-
   var board2 = new GameBoard();
   board2.add(new EscenarioFondo2());
   board2.add(new Salud());
@@ -224,10 +197,8 @@ var acabaPartida = function(mensaje, nombreSonido) {
 //---------------------------------------------------------------------------------------------------------------------------------
 
 var EscenarioFondo = function(){
-  this.setup('TapperGameplay', {x:0, y:0});
+  this.setup('fondoPrincipal', {x:0, y:0});
   this.step = function(dt) { };
-
-
 }//EscenarioFondo
 
 EscenarioFondo.prototype = new Sprite();
@@ -235,7 +206,7 @@ EscenarioFondo.prototype = new Sprite();
 //---------------------------------------------------------------------------------------------------------------------------------
 
 var EscenarioFondo2 = function(){
-  this.setup('ParedIzda', {x:0, y:0}); //setup(sprite, props)
+  this.setup('paredIzquierda', {x:0, y:0});
   this.step = function(dt) { };
 }//EscenarioFondo
 
@@ -248,6 +219,8 @@ var Beer = function(x, y, vx, estadoBoolean){
   Hace que una cerveza llena se mueva de derecha a izquierda. 
   Crea esta clase de modo que puedas iniciarla en distintas posiciones 
   y que se mueva a distinta velocidad.
+  Puede estar en dos estados: llena o vacía. 
+  Cada estado tiene un aspecto y sentido de la velocidad diferentes.
   */
 
   //el sprite necesita saber unas coordenadas donde dibujarse de primeras
@@ -256,10 +229,10 @@ var Beer = function(x, y, vx, estadoBoolean){
   this.llena = estadoBoolean;
 
   if(this.llena){
-    this.setup('bebidallena');
+    this.setup('bebidaLlena');
     this.vx = vx*-1;
   }else{
-    this.setup('bebidavacia');
+    this.setup('bebidaVacia');
     this.vx = vx;
   }
 
@@ -268,14 +241,15 @@ var Beer = function(x, y, vx, estadoBoolean){
     this.x += this.vx * dt;
     var objetoColisionado = this.board.collide(this,OBJECT_DEADZONE);
     if(objetoColisionado) {
-      console.log("deadzone choca contra cerveza")
       GameManager.jarraPerdida();
-      //collision.hit(this.damage); 
-      //esto borra la deadzone (lo que ha detectado que colisiona con cerveza)
-      //si la borrasemos tras la primera colision, las bebidas que no se eliminarian
-      //donde estaba antes ese deadzone
+      /*Para debugueo
+        console.log("deadzone choca contra cerveza")
+        collision.hit(this.damage); -> esto borra la deadzone (lo que ha detectado que colisiona con cerveza)
+        si la borrasemos tras la primera colision, las bebidas que no se eliminarian
+        donde estaba antes ese deadzone
+      */
       
-      this.board.remove(this); //y esto borraria la cerveza
+      this.board.remove(this); //esto borra la cerveza
     }
 
   }//step de Beer
@@ -372,8 +346,6 @@ var Player = function(){
             this.x += (-niveles[nivelSeleccionado].velocidadLateralCamarero); 
             //dejamos que vaya para la izquierda si, en su respectiva barra, no se ha pasado de cierta coordenada x
       }
-      
-      console.log("has pulsado izquierda");
      
       Game.keys['left'] = false;
     }else if(Game.keys['right']) { 
@@ -413,13 +385,17 @@ var Player = function(){
     var objetoColisionado = this.board.collide(this,OBJECT_DRINK);
     if(objetoColisionado && this.listoParaServir) {
       //el camarero solo puede recoger bebidas vacias estando bien colocado
+
+      /*Para debugueo
       console.log("cerveza es colisionada por camarero") //para comprobar que la colision es correcta
-      objetoColisionado.hit(this.damage); 
+      */
+
+      objetoColisionado.hit(); 
       //esto borra la bebida (lo que ha detectado que colisiona con el camarero)
 
       reproduceSonido('recoge_cerveza');
       
-      //this.board.remove(this); //y esto borraria al camarero, pero no queremos eso!
+      //this.board.remove(this); //esto borraria al camarero, pero no queremos eso!
 
       GameManager.numJarrasGeneradas--;
       GameManager.puntuacionActual += niveles[nivelSeleccionado].puntuacionBebidaVacia;
@@ -427,7 +403,7 @@ var Player = function(){
 
     var objetoColisionado = this.board.collide(this,OBJECT_PROPINA);
     if(objetoColisionado) {
-      objetoColisionado.hit(this.damage); 
+      objetoColisionado.hit(); 
       GameManager.puntuacionActual += niveles[nivelSeleccionado].puntuacionPropina;
       reproduceSonido('propina_recogida');
     }
@@ -451,8 +427,8 @@ var DeadZone = function(x, y){
     que dibuje un rectángulo usando 
     las instrucciones primitivas del Canvas de HTML5. 
 
-    Al colocar las DeadZone tendrás que tener cuidado 
-    y comprobar que cuando el Player crea una cerveza, 
+    Al colocar las DeadZone tenemos cuidado 
+    y comprobamos que cuando el Player crea una cerveza, 
     ésta no se destruye inmediatamente.
   */
 
@@ -475,7 +451,11 @@ DeadZone.prototype.type = OBJECT_DEADZONE;
 
 
 //---------------------------------------------------------------------------------------------------------------------------------
-
+/*
+El juego no termina inmediatamente cuando un cliente llega al final de la barra
+o una bebida (llena o vacía) se cae, sino que el jugador tiene de varias vidas. 
+Cada vez que muere, el nivel se reinicia.
+*/
 var Salud = function(){
   
   this.draw = function(dt){ 
@@ -492,8 +472,12 @@ var Salud = function(){
 }//Salud
 
 //---------------------------------------------------------------------------------------------------------------------------------
-
-
+/*
+El jugador gana ciertos puntos (segun el nivel que esté jugando) 
+cada vez que sirve a un cliente y tambien gana puntos extra 
+cuando recoge una bebida vacía. 
+El menú principal muestra la máxima puntuación conseguida en una sesión de juego.
+*/
 var Puntuacion = function(){
    
   this.draw = function(dt){ 
@@ -517,8 +501,16 @@ var Client = function(x, y, vx, nombreSprite){
   /*
   Hace que un cliente se mueva de izquierda a derecha. 
   Al igual que la cerveza, crea esta clase de modo 
-  que puedas iniciarla en distintas posiciones, con distintos sprites (opcional)
+  que puedas iniciarla en distintas posiciones, con distintos sprites
   y que se mueva a distinta velocidad.
+
+  Cuando un cliente "recibe" una bebida, se mueve hacia atrás 
+  en la barra durante unos segundos (está bebiendo). 
+  Si en ese movimiento sale por la puerta de la izquierda 
+  entonces se considera que el cliente ha sido servido. 
+  Si no llega a salir por la puerta durante el tiempo en que bebe,
+  entonces se detiene y vuelve a moverse hacia la derecha de la barra. 
+  Cuando el cliente está bebiendo no cogerá las cervezas llenas que le lleguen.
   */
 
   //el sprite necesita saber unas coordenadas donde dibujarse de primeras
@@ -567,7 +559,7 @@ var Client = function(x, y, vx, nombreSprite){
 
         if(!this.bebiendo){ //solo si no está bebiendo es cuando puede reaccionar con una bebida llena
           this.cambioDeSentido();
-          objetoColisionado.hit(this.damage); 
+          objetoColisionado.hit(); 
           //esto borra la bebida (lo que ha detectado que colisiona con el cliente)
           //GameManager.numJarrasGeneradas--; //esto cuenta solo cuando lo recoge el camarero
           this.board.add(new Beer(objetoColisionado.x, objetoColisionado.y, -this.vx, false));
@@ -579,11 +571,12 @@ var Client = function(x, y, vx, nombreSprite){
         //this.board.remove(this); //y esto borraría al cliente cuando colisiona con cerveza, pero ya no queremos que la cerveza borre al cliente
         
       }else if(objetoColisionado instanceof DeadZone){
-        console.log("cliente choca contra deadzone");
-        //collision.hit(this.damage); 
-        //esto borraria la deadzone (lo que ha detectado que colisiona con el cliente)
+        /*Para debugueo
+          console.log("cliente choca contra deadzone");
+          collision.hit(this.damage); //esto borraria la deadzone (lo que ha detectado que colisiona con el cliente)
+        */
         
-        this.board.remove(this); //y esto borra al cliente
+        this.board.remove(this); //esto borra al cliente
 
 
         //nos aseguramos de que pasen cosas bonitas solo si choca con alguna deadzone
@@ -621,7 +614,14 @@ Client.prototype = new Sprite();
 Client.prototype.type = OBJECT_CLIENT;
 
 //---------------------------------------------------------------------------------------------------------------------------------
-
+/*
+Clientes aleatorios pueden dejar propina al final de la barra al ser servidos. 
+Esto implica que el camarero ha de ir a recoger la propina para ganar 
+los puntos extras que proporciona. 
+El jugador puede moverse a izquierda y derecha de una barra 
+pero no puede servir cervezas en ese momento. 
+Si pulsamos arriba o abajo volvemos al comportamiento normal de movimiento.
+*/
 var Propina = function(mix, miy){
 
   this.setup('propina', {x:mix, y:miy});
@@ -635,13 +635,23 @@ Propina.prototype.type = OBJECT_PROPINA;
 
 //---------------------------------------------------------------------------------------------------------------------------------
 
+/*
+Con esta clase tenemos una forma de crear distintos comportamientos
+para cada barra: una a una le indicamos la lógica de como tiene que crear los clientes.
+Se puede configurar para que se generen un número concreto de clientes
+de un determinado tipo, a una frecuencia de creación fija
+y con un determinado retardo con respecto a la creación del primer cliente
+(para que no salgan clientes en todas las barras a la vez).
+*/
 var Spawner = function(numBarra, numClientes, frecuenciaCreacion, retardo){
   this.primero=false;//para ver cuando se crea el primer cliente
   this.tiempo = 0; //empezamos en tiempo 0
   this.retardo = retardo;
   this.frecuenciaCreacion = frecuenciaCreacion;
   this.numClientes = numClientes;
-  console.log("La barra " + numBarra + " tiene de clientes " + this.numClientes);
+  /*Para debugueo
+    console.log("La barra " + numBarra + " tiene de clientes " + this.numClientes);
+  */
   var spriteClienteAleatorio = spritesClientes[numeroAleatorio(0, spritesClientes.length-1)];
   var velocidadAleatoria = numeroAleatorio(niveles[nivelSeleccionado].minVelocidadCliente, niveles[nivelSeleccionado].maxVelocidadCliente)
   GameManager.sumarClientes(this.numClientes);
@@ -695,11 +705,9 @@ var GameManager = new function(){
   • Cada vez que sirvamos a un cliente deberemos avisar al GameManager para que sepa cuántos clientes lleva servidos.
   • Cada vez que una jarra caiga o un cliente llegue al extremo de la barra deberemos avisar al GameManager.
   
-  De momento solo haz que el GameManager muestre por consola si se ha ganado o se ha perdido. En la última sección lo implementaremos adecuadamente.
-
   */
 
-  this.numTotalClientes; //debe decirselo spawners al comenzar el juego
+  this.numTotalClientes; //Cada spawner al comenzar el juego ira sumando cantidad a esta variable
   this.numJarrasGeneradas = 0; //esto va aumentando cuando avisan a GameManager
   this.numClientesServidos = 0; //igual
   this.vidasDisponibles;// = niveles[nivelSeleccionado].vidas; al ser GameManager un singleton no consigue pillar el valor de esto... se lo doy tras invocar a la funcion configuraVidas()

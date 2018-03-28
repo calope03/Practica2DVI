@@ -1,4 +1,11 @@
 /*
+DVI Practica 2 - GII - UCM Curso 2017/2018
+Alumnos:
+Cesar Godino Rodriguez
+Carmen Lopez Gonzalo 
+*/
+
+/*
 Definimos aqui distintos niveles con distintos patrones de comportamiento 
 para los generadores de clientes. 
 */
