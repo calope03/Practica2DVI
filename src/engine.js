@@ -1,9 +1,9 @@
-/*
-DVI Practica 2 - GII - UCM Curso 2017/2018
-Alumnos:
-Cesar Godino Rodriguez
-Carmen Lopez Gonzalo 
-*/
+/**
+ * DVI Practica 2 - GII - UCM Curso 2017/2018
+ * Alumnos:
+ * Cesar Godino Rodriguez
+ * Carmen Lopez Gonzalo 
+ */
 
 (function() {
     var lastTime = 0;
@@ -56,11 +56,9 @@ var Metrics = new function(){
     Game.ctx.fillStyle = "#fff";
     ctx.textAlign = "left";
     ctx.font = "15px monospace";
-    //subtitle,Game.width/2,Game.height/2 + 140
     ctx.fillText("fps: " + result, 0, 460);
-    //ctx.fillText("compTime: " + Math.round(this.elapsed*100)/100, 0, 30);
     ctx.fillText("compTime: " + this.elapsed.toFixed(2), 0, 475);
-    //alternativa usando toFixed aunque hay casos donde puede no redondear
+    //usando toFixed hay casos donde puede no redondear
     //de forma muy precisa como con 1,5550, que da 1,55 en vez de 1,56
   }
 }//Metrics
@@ -120,7 +118,8 @@ var Game = new function() {
 
   var lastTime = new Date().getTime();
   var maxTime = 1/30;
-  // Game Loop
+
+  // Game Loop, el corazón del juego
   this.loop = function() {
     
     GameManager.compruebaEstado();
@@ -189,9 +188,10 @@ var Game = new function() {
 //---------------------------------------------------------------------------------------------------------------------------------
 
 /**
- * Constructora de SpriteSheer. 
- * Básicamente se encarga de cargar el archivo fuente de todos los sprites que usaremos
- * y los dibuja a partir de las coordenadas indicadas en dicha fuente.
+ * Constructora de SpriteSheet. 
+ * Básicamente se encarga de cargar, con load, el archivo fuente de todos los sprites que usaremos
+ * y, con draw, los dibuja a partir de las coordenadas indicadas en dicha fuente.
+ * @return {SpriteSheet} el objeto creado por la constructora.
  */
 var SpriteSheet = new function() {
   this.map = { }; 
@@ -219,11 +219,11 @@ var SpriteSheet = new function() {
 };//SpriteSheet
 
 //---------------------------------------------------------------------------------------------------------------------------------
-/*
-Desde startGame se crea así la pantalla de títulos inicial con el título del juego 
-y nos indica con qué teclas se puede empezar. 
-Al acabar, llama a callback que es playGame actualmente. 
-*/
+/**
+ * Desde startGame se crea así la pantalla de títulos inicial con el título del juego 
+ * y nos indica con qué teclas se puede empezar. 
+ * Al acabar, llama a callback que es playGame actualmente. 
+ */
 var TitleScreen = function TitleScreen(title,subtitle,callback) {
   var up = false;
 
@@ -263,14 +263,14 @@ var TitleScreen = function TitleScreen(title,subtitle,callback) {
 };//TitleScreen
 
 //---------------------------------------------------------------------------------------------------------------------------------
-/*
-Con esta pantalla de títulos se muestra el final del juego
-cuando hemos perdido o ganado la partida.
-Desde esta pantalla se puede volver a comenzar una nueva partida. 
-Antes de crear esta pantalla ya tenemos todas las capas (GameBoard) creadas 
-y las podamos activar y desactivar cuando es necesario (con GameManager, desde compruebaEstado())
-De ese modo, no ejecutarań ni su método step ni su método draw.
-*/
+/**
+ * Con esta pantalla de títulos se muestra el final del juego
+ * cuando hemos perdido o ganado la partida.
+ * Desde esta pantalla se puede volver a comenzar una nueva partida. 
+ * Antes de crear esta pantalla ya tenemos todas las capas (GameBoard) creadas 
+ * y las podamos activar y desactivar cuando es necesario (con GameManager, desde compruebaEstado())
+ * De ese modo, no ejecutarań ni su método step ni su método draw.
+ */
 var MiTitleScreen = function MiTitleScreen(title,subtitle,callback) {
   var up = false;
 
@@ -324,7 +324,7 @@ var Temporizador = function Temporizador(tiempoAEsperar,callback) {
     }else{
       currTime = new Date().getTime();
     }
-  };
+  }; //step de Temporizador
 
   this.draw = function(ctx) {};
 
@@ -343,7 +343,7 @@ var GameBoard = function() {
 
   // Add a new object to the object list
   this.add = function(obj) { 
-    obj.board=this; //AQUI ES DONDE HACEMOS QUE CADA SPRITE TENGA BOARD COMO ATRIBUTO
+    obj.board=this; //Así cada sprite tiene a board como atributo
     this.objects.push(obj); 
     this.cnt[obj.type] = (this.cnt[obj.type] || 0) + 1;
     return obj; 
