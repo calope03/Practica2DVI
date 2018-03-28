@@ -288,15 +288,11 @@ var MiTitleScreen = function MiTitleScreen(title,subtitle,callback) {
     var measure2 = ctx.measureText(subtitle);
     ctx.fillText(subtitle,Game.width/2 - measure2.width/2,Game.height/2 + 50);
 
-
     var puntuacionMax = GameManager.puntuacionMaxima.toString();
     var tupuntuacion  = "Tu puntuación máxima es: " + puntuacionMax;
     ctx.font = "20px 'Rye'";
     var measure3 = ctx.measureText(tupuntuacion);
     ctx.fillText(tupuntuacion,Game.width/2 - measure3.width/2,Game.height/2 + 100);
-  
-    
-    
 
   };
 };//TitleScreen

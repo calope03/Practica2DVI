@@ -6,8 +6,8 @@ var sprites = {
  cliente4: { sx: 512, sy: 230, w: 32, h: 32, frames: 1 },
  bebidallena: { sx: 496, sy: 106, w: 12, h: 25, frames: 1 },
  bebidavacia: { sx: 496, sy: 138, w: 12, h: 25, frames: 1 },
- deadzone: { sx: 512, sy: 235, w: 5, h: 70, frames: 1 }, //coge un trozo de la imagen en el que no hay NADA, es un sprite "invisible"
- ParedIzda: {sx: 0, sy: 0, w: 132, h: 480, frames: 1}, //de momento no lo usamos
+ deadzone: { sx: 512, sy: 235, w: 5, h: 70, frames: 1 }, //coge un trozo de la imagen en el que no hay nada, es un sprite "invisible"
+ ParedIzda: {sx: 0, sy: 0, w: 132, h: 480, frames: 1},
  TapperGameplay: {sx: 0, sy: 480, w: 512, h: 480,frames: 1},
  corazon: {sx: 514, sy: 264, w: 26, h: 23, frames: 1},
  0: {sx: 397, sy: 293, w: 17, h: 19, frames: 1},
@@ -23,35 +23,29 @@ var sprites = {
  propina: {sx: 516, sy: 318, w: 28, h: 20, frames: 1}
 };//sprites
 
+var spritesClientes = ["cliente", "cliente2", "cliente3", "cliente4"];
+
 var posicionesDeadzoneIzq = [{x:90, y:50}, {x:60, y:160}, {x: 30, y: 250}, {x: -2, y: 350}];
 var posicionesDeadzoneDer = [{x:335, y:60}, {x:365, y:160}, {x: 395, y: 260}, {x: 430, y: 350}];
-
 var coordenadasInicioBarras = [{x:100, y:90}, {x:80, y:190}, {x: 60, y: 290}, {x: 30, y: 380}];
 
-var coordenadasCorazon= [{x:10, y:10}, {x:40, y:10}, {x: 70, y: 10}];
-var VIDAS = 3;
 var coordenadasPuntuacion1= [{x: 480, y: 10}, {x: 460, y: 10}, {x: 440, y: 10}, {x:420, y:10}, {x:400, y:10}, {x:380, y:10}];
 
+var coordenadasCorazon= [{x:10, y:10}];
+//como minimo tiene que haber 1 vida, como maximo las que quepan en pantalla en cuanto a corazones
 
-
-var spritesClientes = ["cliente", "cliente2", "cliente3", "cliente4"];
-//var velocidades = [30, 35, 40, 45];
 
 var OBJECT_PLAYER = 1,
     OBJECT_DRINK = 2,
     OBJECT_DEADZONE = 4,
     OBJECT_CLIENT = 8,
     OBJECT_PROPINA = 16;
-    //OBJECT_PLAYER_PROJECTILE = 2,
-    //OBJECT_POWERUP = 16;
 
 var canvas;
 var nivelSeleccionado = "nivel1";
 //si no se selecciona bien, al menos cargará los datos del nivel 1 por defecto
 
-//var spriteClienteAleatorio = spritesClientes[numeroAleatorio(0, spritesClientes.length-1)];
-
-audio_principal = new Audio('sounds/musica_fondo.mp3'); 
+var audio_principal = new Audio('sounds/musica_fondo.mp3'); 
 audio_principal.addEventListener('ended', function() {
     this.currentTime = 0;
     this.play();
@@ -60,21 +54,8 @@ audio_principal.addEventListener('ended', function() {
 //---------------------------------------------------------------------------------------------------------------------------------
 
 var startGame = function() {
-  var ua = navigator.userAgent.toLowerCase();
-
-  // Only 1 row of stars
-  /*
-  if(ua.match(/android/)) {
-    Game.setBoard(0,new Starfield(50,0.6,100,true));
-  } else {
-    Game.setBoard(0,new Starfield(20,0.4,100,true));
-    Game.setBoard(1,new Starfield(50,0.6,100));
-    Game.setBoard(2,new Starfield(100,1.0,50));
-  }*/  
-
-  var audio = new Audio('sounds/comienzo.mp3');
-  audio.play();
-
+    
+  reproduceSonido('comienzo');
   Game.setBoard(3,new TitleScreen("Mini Tapper",
                                   "Pulsa 1, 2 ó 3 para elegir un nivel",
                                   playGame));
@@ -94,43 +75,63 @@ var generaDeadzones = function(board){
     board.add(new DeadZone(posicionesDeadzoneDer[i].x, posicionesDeadzoneDer[i].y));
   }
 
-  //Game.setBoard(1, board);
+}
+
+var reproduceSonido = function(nombreSonido){
+  var audio = new Audio('sounds/' + nombreSonido + '.mp3');
+  audio.play();
+}
+
+var reproduceAudioPrincipal = function(play){
+  if(play){
+    audio_principal.play();
+  }else{
+    audio_principal.pause();
+    audio_principal.currentTime = 0;
+  }
+}
+
+var configuraVidas = function(){
+  for(i = 1; i < niveles[nivelSeleccionado].vidas; ++i){ //i=1 porque siempre habra 1 vida como minimo
+    coordenadasCorazon[i] = {x: coordenadasCorazon[i-1].x+30, y: 10};
+  }
 }
 
 var playGame = function() {
-  //Game.keys['space'] = false;
 
   if(Game.keys['1']) nivelSeleccionado = "nivel1";
   else if(Game.keys['2']) nivelSeleccionado = "nivel2";
   else if(Game.keys['3']) nivelSeleccionado = "nivel3";
 
+  Game.keys['space'] = false;
   Game.keys['1'] = false;
   Game.keys['2'] = false;
   Game.keys['3'] = false;
 
   console.log("nivel elegido = " + nivelSeleccionado);
 
-  audio_principal.play();
+  configuraVidas();
+  GameManager.numTotalClientes = 0;
+  GameManager.vidasDisponibles = niveles[nivelSeleccionado].vidas;
+
+  reproduceAudioPrincipal(true);
 
   Game.desactivarBoard(3);
-/******************************************************************************************************/
-/*                                        CAPA 0                                                      */
-/******************************************************************************************************/
+
+  /******************************************************************************************************/
+  /*                                        CAPA 0                                                      */
+  /******************************************************************************************************/
   var board = new GameBoard();
   //SpriteSheet.draw(Game.ctx,"TapperGameplay",0,0);
   board.add(new EscenarioFondo());
   Game.setBoard(0,board);
-  
-
-
-/******************************************************************************************************/
-/*                                        CAPA 1                                                      */
-/******************************************************************************************************/
+  /******************************************************************************************************/
+  /*                                        CAPA 1                                                      */
+  /******************************************************************************************************/
   var board1 = new GameBoard();
   board1.add(new Player());
   //Game.setBoard(1,board);
   
-
   GameManager.numTotalClientes = 0;
   //console.log("A VER " + GameManager.numTotalClientes);
   //OJO, esto tendrá que hacerlo Spawners. Se moverá esta linea.
@@ -147,13 +148,9 @@ var playGame = function() {
     retardo = ((Math.random() * niveles[nivelSeleccionado].maxRetardo)+niveles[nivelSeleccionado].minRetardo);//para generar un retardo entre 1 y 5 con desimales
     numClientes = numeroAleatorio(niveles[nivelSeleccionado].minClientesBarra,niveles[nivelSeleccionado].maxClientesBarra);//para generar un numero de clientes entre 1 y 5
     frecuenciaCreacion = (Math.random() * niveles[nivelSeleccionado].maxFrecuenciaCreacion) + niveles[nivelSeleccionado].minFrecuenciaCreacion;
-    //console.log("AQUI " + frecuenciaCreacion);
-    //console.log("AQUI " + niveles[nivelSeleccionado].maxFrecuenciaCreacion);
     
     board1.add(new Spawner(i,numClientes,frecuenciaCreacion,retardo));
   }
-
-  //1, 2, 3, 1 -> total = 7
 
   /*
   //BARRA 1
@@ -184,16 +181,12 @@ var playGame = function() {
   board1.add(new Spawner(3,numClientes,frecuenciaCreacion,retardo));
   */
 
-  
-  //----------------------
-
   generaDeadzones(board1);
-
   Game.setBoard(1,board1);
 
-/******************************************************************************************************/
-/*                                        CAPA 2                                                      */
-/******************************************************************************************************/
+  /******************************************************************************************************/
+  /*                                        CAPA 2                                                      */
+  /******************************************************************************************************/
 
 
   var board2 = new GameBoard();
@@ -204,44 +197,34 @@ var playGame = function() {
 
 };//playGame
 
-var winGame = function() {
-  reiniciar();
-  Game.desactivarBoard(1);
-  
-  Game.setBoard(3,new Temporizador(1000, function(){
-                                GameManager.puntuacionActual = 0;
-                                Game.setBoard(3,new MiTitleScreen("¡Has ganado!", 
-                                  "Pulsa espacio para otra partida",
-                                  playGame));
-                                }));
-};
 
-var loseGame = function() {
- 
-  reiniciar();
-  Game.desactivarBoard(1);
-  //Game.boards[1].activada = false;
-  Game.setBoard(3,new Temporizador(1000, function(){
-                                  GameManager.puntuacionActual = 0;
-                                  Game.setBoard(3, new MiTitleScreen("¡Has perdido!", 
-                                  "Pulsa espacio para otra partida",
-                                  playGame));
-                                }));
-};
-
-
-
-var reiniciar = function(){
+var reiniciarDatos = function(){
   GameManager.numTotalClientes = -1;
   GameManager.numJarrasGeneradas = 0;
   GameManager.numClientesServidos = 0;
-  GameManager.vidasDisponibles = VIDAS;
+  GameManager.vidasDisponibles = niveles[nivelSeleccionado].vidas;
   
 }
+
+var acabaPartida = function(mensaje, nombreSonido) {
+  reiniciarDatos();
+  Game.desactivarBoard(1);
+
+  reproduceAudioPrincipal(false);
+  reproduceSonido(nombreSonido);
+
+  Game.setBoard(3,new Temporizador(1000, function(){
+                                  GameManager.puntuacionActual = 0;
+                                  Game.setBoard(3, new MiTitleScreen(mensaje, 
+                                  "Pulsa espacio para otra partida",
+                                  playGame));
+                                }));
+};
+
 //---------------------------------------------------------------------------------------------------------------------------------
 
 var EscenarioFondo = function(){
-  this.setup('TapperGameplay', {x:0, y:0}); //setup(sprite, props)
+  this.setup('TapperGameplay', {x:0, y:0});
   this.step = function(dt) { };
 
 
@@ -258,7 +241,7 @@ var EscenarioFondo2 = function(){
 
 EscenarioFondo2.prototype = new Sprite();
 
-//-----------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------------------------------------------
 
 var Beer = function(x, y, vx, estadoBoolean){
   /*
@@ -270,25 +253,19 @@ var Beer = function(x, y, vx, estadoBoolean){
   //el sprite necesita saber unas coordenadas donde dibujarse de primeras
   this.x = x;
   this.y = y;
- // this.xant = 0;
   this.llena = estadoBoolean;
 
   if(this.llena){
-    this.setup('bebidallena'); //setup(sprite, props)
+    this.setup('bebidallena');
     this.vx = vx*-1;
   }else{
     this.setup('bebidavacia');
-    //console.log("vx a la vuelta vale: " + this.vx);
     this.vx = vx;
-   //console.log("vx a la vuelta vale: " + this.vx);
   }
 
   
   this.step = function(dt){
-    //this.xant =this.x;
     this.x += this.vx * dt;
-   // var resultado = (this.xant -this.x)/dt;
-   // console.log("mi velocidad es: "+ this.vx);
     var objetoColisionado = this.board.collide(this,OBJECT_DEADZONE);
     if(objetoColisionado) {
       console.log("deadzone choca contra cerveza")
@@ -311,7 +288,6 @@ Beer.prototype.type = OBJECT_DRINK;
 
 //---------------------------------------------------------------------------------------------------------------------------------
 
-
 var Player = function(){
 
   this.posiciones = [{x:325, y:90},
@@ -330,7 +306,7 @@ var Player = function(){
   this.posicionActual = 0;
   this.listoParaServir = true;
 
-  this.setup('camarero'); //setup(sprite, props)
+  this.setup('camarero');
 
   /*
     Hace que el camarero se mueva en cuatro posiciones fijas de manera discreta, 
@@ -393,7 +369,7 @@ var Player = function(){
           (this.posicionActual == 1 && this.x > 70) ||
           (this.posicionActual == 2 && this.x > 40) ||
           (this.posicionActual == 3 && this.x > 8) ){
-            this.x += (-5); 
+            this.x += (-niveles[nivelSeleccionado].velocidadLateralCamarero); 
             //dejamos que vaya para la izquierda si, en su respectiva barra, no se ha pasado de cierta coordenada x
       }
       
@@ -401,17 +377,12 @@ var Player = function(){
      
       Game.keys['left'] = false;
     }else if(Game.keys['right']) { 
-
-      /*if(!this.listoParaServir){
-        this.listoParaServir = true;
-      }*/
-
       
       if( (this.posicionActual == 0 && this.x < this.posiciones[0].x) ||
           (this.posicionActual == 1 && this.x < this.posiciones[1].x) ||
           (this.posicionActual == 2 && this.x < this.posiciones[2].x) ||
           (this.posicionActual == 3 && this.x < this.posiciones[3].x) ){
-            this.x += (5); 
+            this.x += (niveles[nivelSeleccionado].velocidadLateralCamarero); 
             //dejamos que vaya para la derecha si, en su respectiva barra, no se ha pasado de cierta coordenada x
       }
       else{
@@ -421,27 +392,22 @@ var Player = function(){
       }
 
       Game.keys['right'] = false;
-    }else if(Game.keys['space']){//COMPROBAR QUE ESTE EN LAS POSICIONES DE INICIO DE LA BARRA PARA PODER SERVIR, SI NO NANAI
-      Game.keys['space'] = false;
-      this.reload = this.reloadTime;
 
-      
+    }else if(Game.keys['space']){
+
+      Game.keys['space'] = false;
 
       if(this.listoParaServir){
-        this.board.add(new Beer(this.x-12, this.y+10, 100, true));
+        this.board.add(new Beer(this.x-12, this.y+10, niveles[nivelSeleccionado].velocidadCrearBebida, true));
 
-        var audio = new Audio('sounds/sirve_cerveza.mp3');
-        audio.play();
-
-
+        reproduceSonido('sirve_cerveza');
         GameManager.numJarrasGeneradas++;
       }
       
     }
 
     if(seHaMovido){
-      var audio = new Audio('sounds/movimiento_camarero.mp3');
-      audio.play();
+      reproduceSonido('movimiento_camarero');
     }
 
     var objetoColisionado = this.board.collide(this,OBJECT_DRINK);
@@ -451,31 +417,22 @@ var Player = function(){
       objetoColisionado.hit(this.damage); 
       //esto borra la bebida (lo que ha detectado que colisiona con el camarero)
 
-      var audio = new Audio('sounds/recoge_cerveza.mp3');
-      audio.play();
+      reproduceSonido('recoge_cerveza');
       
       //this.board.remove(this); //y esto borraria al camarero, pero no queremos eso!
 
-      //this.board.add(new Beer(this.x, this.y, 30, false));
-      //this.board.add(new Beer(collision.x, collision.y, 30, false));
-      //Game.setBoard(1, this.board);
       GameManager.numJarrasGeneradas--;
-      GameManager.puntuacionActual += 100;
+      GameManager.puntuacionActual += niveles[nivelSeleccionado].puntuacionBebidaVacia;
     }
 
     var objetoColisionado = this.board.collide(this,OBJECT_PROPINA);
     if(objetoColisionado) {
       objetoColisionado.hit(this.damage); 
-      GameManager.puntuacionActual += 1500;
-      var audio = new Audio('sounds/propina_recogida.mp3');
-      audio.play();
+      GameManager.puntuacionActual += niveles[nivelSeleccionado].puntuacionPropina;
+      reproduceSonido('propina_recogida');
     }
 
-    //this.reload-=dt; no nos sirve para nada creo
-    
-      
-
-  };//step
+  };//step de Player
 
 }//Player
 
@@ -502,11 +459,11 @@ var DeadZone = function(x, y){
   this.x = x;
   this.y = y;
 
-  this.setup('deadzone'); //setup(sprite, props)
+  this.setup('deadzone');
 
   this.draw = function(dt){
     //ESTO ES UNICAMENTE PARA DEPURAR, vemos asi las deadzones dibujadas
-    Game.ctx.fillRect(this.x, this.y, 5, 70);
+    //Game.ctx.fillRect(this.x, this.y, 5, 70);
   }
 
   this.step = function(dt){ }
@@ -527,7 +484,6 @@ var Salud = function(){
       this.x = coordenadasCorazon[i].x;
       this.y = coordenadasCorazon[i].y;
       Game.ctx.drawImage(SpriteSheet.image, s.sx + 0 * s.w, s.sy, s.w, s.h, this.x, this.y, s.w, s.h);
-      //console.log("toy aqui");
     }
  }
 
@@ -546,16 +502,14 @@ var Puntuacion = function(){
     for(var i = 0; i < puntuacionAct.length;i++){
       var s = SpriteSheet.map[puntuacionAct[i]];
       this.x = coordenadasPuntuacion1[puntuacionAct.length - i - 1].x;
-     // console.log();
       this.y = coordenadasPuntuacion1[puntuacionAct.length - i - 1].y;
       Game.ctx.drawImage(SpriteSheet.image, s.sx + 0 * s.w, s.sy, s.w, s.h, this.x, this.y, s.w, s.h);
-      //console.log("toy aqui");
     }
  }
 
   this.step = function(dt){ }
 
-}//Puntuacion Maxima
+}//Puntuacion
 
 //---------------------------------------------------------------------------------------------------------------------------------
 
@@ -574,10 +528,10 @@ var Client = function(x, y, vx, nombreSprite){
   this.dejaraPropina = numeroAleatorio(0,1);
 
   this.bebiendo = false;
-  const TIEMPO_PARA_BEBER = 4000; //o sea, 4 segundos
+  const TIEMPO_PARA_BEBER = niveles[nivelSeleccionado].segundosClienteBebiendo;
   this.horaParaDejarDeBeber = 0;
 
-  this.setup(nombreSprite); //setup(sprite, props)
+  this.setup(nombreSprite);
 
   this.cambioDeSentido = function(){
     this.vx *= (-1);
@@ -592,13 +546,7 @@ var Client = function(x, y, vx, nombreSprite){
   }
 
   this.step = function(dt){
-
     //el cliente siempre se crea con vx positiva
-    /*if(this.bebiendo){
-      this.vx *= (-1); //si esta bebiendo entonces vx siempre negativa (le hacemos ir en sentido contrario)
-    }else{
-      this.vx *= (-1); //cuando cambie a que ha dejado de beber, volvemos a cambiarle el sentido
-    }*/
 
     //quiero comprobar que si esta bebiendo y si ha pasado su tiempo de beber, que vuelva a avanzar
     if(this.bebiendo){
@@ -609,9 +557,9 @@ var Client = function(x, y, vx, nombreSprite){
     }
 
     this.x += this.vx * dt; //el cliente se mueve (en un sentido o en el otro segun vx)
-   // console.log("la velocidad del cliente es:"+ this.vx);
 
-    var objetoColisionado = this.board.collide(this,6);
+    var objetoColisionado = this.board.collide(this,6); 
+    //el 6 es resultado de hacer OR entre 4 y 2, o sea, deadzone y bebida:  100 or 010 = 110
 
     if(objetoColisionado) {
 
@@ -630,17 +578,6 @@ var Client = function(x, y, vx, nombreSprite){
         
         //this.board.remove(this); //y esto borraría al cliente cuando colisiona con cerveza, pero ya no queremos que la cerveza borre al cliente
         
-        /*if(this.dejaraPropina==1){
-          this.board.add(new Propina(this.x, objetoColisionado.y));
-          GameManager.numJarrasGeneradas--;
-        }else{
-          this.board.add(new Beer(objetoColisionado.x, objetoColisionado.y, this.vx, false));
-        }*/
-       
-        //this.board.add(new Beer(this.x, this.y, 30, false));
-        
-        
-        
       }else if(objetoColisionado instanceof DeadZone){
         console.log("cliente choca contra deadzone");
         //collision.hit(this.damage); 
@@ -652,7 +589,6 @@ var Client = function(x, y, vx, nombreSprite){
         //nos aseguramos de que pasen cosas bonitas solo si choca con alguna deadzone
         //pero de la izquierda, porque si es de una de la derecha no mola :P
 
-        //console.log("x de la deadzone = " + objetoColisionado.x);
         var esDeadzoneIzq = false;
         for(i = 0; i < posicionesDeadzoneIzq.length && !esDeadzoneIzq; i++){
           if(objetoColisionado.x == posicionesDeadzoneIzq[i].x){
@@ -661,16 +597,12 @@ var Client = function(x, y, vx, nombreSprite){
         }
 
         if(esDeadzoneIzq){ //el cliente desaparece y queda servido del todo
-          //if(this.dejaraPropina==1) console.log("ESTE DEJA PROPINA");
           GameManager.servir();
-          GameManager.puntuacionActual += 50;
-          var audio = new Audio('sounds/cliente_servido.mp3');
-          audio.play();
+          GameManager.puntuacionActual += niveles[nivelSeleccionado].puntuacionClienteServido;
+          reproduceSonido('cliente_servido');
           if(this.dejaraPropina==1){
-            //this.board.add(new Propina(this.x, objetoColisionado.y));
             this.board.add(new Propina(this.x+40, objetoColisionado.y+50));
-            var audio = new Audio('sounds/aparece_propina.mp3');
-            audio.play();
+            reproduceSonido('aparece_propina');
           }
         }
         else{
@@ -711,17 +643,15 @@ var Spawner = function(numBarra, numClientes, frecuenciaCreacion, retardo){
   this.numClientes = numClientes;
   console.log("La barra " + numBarra + " tiene de clientes " + this.numClientes);
   var spriteClienteAleatorio = spritesClientes[numeroAleatorio(0, spritesClientes.length-1)];
-  //var velocidadAleatoria = velocidades[numeroAleatorio(0, velocidades.length-1)];
   var velocidadAleatoria = numeroAleatorio(niveles[nivelSeleccionado].minVelocidadCliente, niveles[nivelSeleccionado].maxVelocidadCliente)
   GameManager.sumarClientes(this.numClientes);
 
   this.step = function(dt){
     if(this.primero){
       this.tiempo = this.tiempo + dt;
-      //console.log("Barra " + numBarra + ": tiempo = " + this.tiempo + " frecuencia = " + this.frecuenciaCreacion);
       if(this.numClientes > 0 && this.tiempo >= this.frecuenciaCreacion){
         this.tiempo = 0;
-        console.log("Crea otro cliente de la barra " + numBarra);
+        //console.log("Crea otro cliente de la barra " + numBarra);
         this.board.add(new Client(coordenadasInicioBarras[numBarra].x, coordenadasInicioBarras[numBarra].y, velocidadAleatoria, spriteClienteAleatorio));
         this.numClientes--;
       }
@@ -731,25 +661,22 @@ var Spawner = function(numBarra, numClientes, frecuenciaCreacion, retardo){
       if(this.tiempo > this.retardo && this.numClientes > 0){
         this.primero = true;
         this.tiempo = 0;
-        console.log("Crea primer cliente de la barra " + numBarra);
+        //console.log("Crea primer cliente de la barra " + numBarra);
         this.board.add(new Client(coordenadasInicioBarras[numBarra].x, coordenadasInicioBarras[numBarra].y, velocidadAleatoria, spriteClienteAleatorio));
         this.numClientes--;
       }
       else
         this.tiempo = this.tiempo + dt;
     }
-  }//step
+  }//step de Spawner
 
   this.draw = function(){}
 }//Spawner
 
 
-
-//Para imprimir informacion util en el desarrollo: iteraciones, tiempo, computacion...
-
 //--------------------------------------------------------------------------------------------------------------------------
 
-var GameManager = new function(){ //asi seria Singleton?
+var GameManager = new function(){ 
   /*
   Se encargará de comprobar el estado en el que se encuentra el juego 
   y de decidir si hemos ganado o perdido.
@@ -775,13 +702,9 @@ var GameManager = new function(){ //asi seria Singleton?
   this.numTotalClientes; //debe decirselo spawners al comenzar el juego
   this.numJarrasGeneradas = 0; //esto va aumentando cuando avisan a GameManager
   this.numClientesServidos = 0; //igual
-  this.vidasDisponibles = VIDAS;
+  this.vidasDisponibles;// = niveles[nivelSeleccionado].vidas; al ser GameManager un singleton no consigue pillar el valor de esto... se lo doy tras invocar a la funcion configuraVidas()
   this.puntuacionActual = 0;
   this.puntuacionMaxima = 0;
-  //estos 2 ultimos cambiarán a true cuando haya una colision con cualquier deadzone
-  //por parte de algun cliente y/o jarra (llena o vacia)
-
-
 
   this.compruebaEstado = function(){
     
@@ -790,350 +713,41 @@ var GameManager = new function(){ //asi seria Singleton?
     }
    
     if(this.vidasDisponibles == 0){
-      audio_principal.pause();
-      audio_principal.currentTime = 0;
-      var audio = new Audio('sounds/game_over.mp3');
-      audio.play();
-      loseGame();
+      acabaPartida("¡Has perdido!", "game_over");
     }
 
     //si no quedan clientes pendientes de servir y no quedan jarras vacias por recoger, ganamos
-    /*console.log("numClientesServidos = " + this.numClientesServidos);
-    console.log("numTotalClientes = " + this.numTotalClientes);
-    console.log("numJarrasGeneradas = " + this.numJarrasGeneradas);*/
     if(this.numClientesServidos == this.numTotalClientes && this.numJarrasGeneradas === 0) {
-      audio_principal.pause();
-      audio_principal.currentTime = 0; 
-      //estas 2 ultimas lineas de arriba paran la musica de fondo
-      //son iguales que las de if this vidas disponibles == 0
-      //asi que cuando limpiemos codigo lo movemos a una funcion
-
-      var audio = new Audio('sounds/comienzo.mp3');
-      audio.play();
-      winGame();
+      acabaPartida("¡Has ganado!", "comienzo");
     }
-  }
+
+  }//compruebaEstado
+
   this.sumarClientes = function(clientes){
     this.numTotalClientes += clientes;
   }
+
   this.servir = function(){
     this.numClientesServidos++;
   }
+
   this.clientePerdido = function(){
     this.numClientesServidos++;
     this.vidasDisponibles--;
-    var audio = new Audio('sounds/pierde_vida.mp3');
-    audio.play();
+    reproduceSonido('pierde_vida');
   }
+
   this.jarraPerdida = function(){
     this.numJarrasGeneradas--;
     this.vidasDisponibles--;
-    var audio = new Audio('sounds/pierde_vida.mp3');
-    audio.play();
+    reproduceSonido('pierde_vida');
   }
 
-      
-
-
-};
+};//GameManager
 
 //---------------------------------------------------------------------------------------------------------------------------------
 
 window.addEventListener("load", function() {
-  //Por aquí pasa solo una vez al arrancar el juego, y nada mas.
-
+  //Por aquí pasa solo una vez al arrancar el juego.
   Game.initialize("game",sprites,startGame);
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//todo esto de abajo sobra del game.js original del campus virtual, pero podría servir todavía
-//-----------------------------------------------------------------------------
-
-
-
-var enemies = {
-  straight: { x: 0,   y: -50, sprite: 'enemy_ship', health: 10, 
-              E: 100 },
-  ltr:      { x: 0,   y: -100, sprite: 'enemy_purple', health: 10, 
-              B: 75, C: 1, E: 100, missiles: 2  },
-  circle:   { x: 250,   y: -50, sprite: 'enemy_circle', health: 10, 
-              A: 0,  B: -100, C: 1, E: 20, F: 100, G: 1, H: Math.PI/2 },
-  wiggle:   { x: 100, y: -50, sprite: 'enemy_bee', health: 20, 
-              B: 50, C: 4, E: 100, firePercentage: 0.001, missiles: 2 },
-  step:     { x: 0,   y: -50, sprite: 'enemy_circle', health: 10,
-              B: 150, C: 1.2, E: 75 }
-};
-
-//------------------------------------------------------------------------------
-
-var Starfield = function(speed,opacity,numStars,clear) {
-
-  // Set up the offscreen canvas
-  var stars = document.createElement("canvas");
-  stars.width = Game.width; 
-  stars.height = Game.height;
-  var starCtx = stars.getContext("2d");
-
-  var offset = 0;
-
-  // If the clear option is set, 
-  // make the background black instead of transparent
-  if(clear) {
-    starCtx.fillStyle = "#000";
-    starCtx.fillRect(0,0,stars.width,stars.height);
-  }
-
-  // Now draw a bunch of random 2 pixel
-  // rectangles onto the offscreen canvas
-  starCtx.fillStyle = "#FFF";
-  starCtx.globalAlpha = opacity;
-  for(var i=0;i<numStars;i++) {
-    starCtx.fillRect(Math.floor(Math.random()*stars.width),
-                     Math.floor(Math.random()*stars.height),
-                     2,
-                     2);
-  }
-
-  // This method is called every frame
-  // to draw the starfield onto the canvas
-  this.draw = function(ctx) {
-    var intOffset = Math.floor(offset);
-    var remaining = stars.height - intOffset;
-
-    // Draw the top half of the starfield
-    if(intOffset > 0) {
-      ctx.drawImage(stars,
-                0, remaining,
-                stars.width, intOffset,
-                0, 0,
-                stars.width, intOffset);
-    }
-
-    // Draw the bottom half of the starfield
-    if(remaining > 0) {
-      ctx.drawImage(stars,
-              0, 0,
-              stars.width, remaining,
-              0, intOffset,
-              stars.width, remaining);
-    }
-  };
-
-  // This method is called to update
-  // the starfield
-  this.step = function(dt) {
-    offset += dt * speed;
-    offset = offset % stars.height;
-  };
-};//Starfield
-
-//---------------------------------------------------------------------------------------------------------------------------------
-
-var PlayerShip = function() { 
-  this.setup('ship', { vx: 0, reloadTime: 0.25, maxVel: 200 });
-
-  this.reload = this.reloadTime;
-  this.x = Game.width/2 - this.w / 2;
-  this.y = Game.height - Game.playerOffset - this.h;
-
-  this.step = function(dt) {
-    if(Game.keys['left']) { this.vx = -this.maxVel; }
-    else if(Game.keys['right']) { this.vx = this.maxVel; }
-    else { this.vx = 0; }
-
-    this.x += this.vx * dt;
-
-    if(this.x < 0) { t
-      his.x = 0; 
-    }
-    else if(this.x > Game.width - this.w) { 
-      this.x = Game.width - this.w;
-    }
-
-    this.reload-=dt;
-    if(Game.keys['fire'] && this.reload < 0) {
-      Game.keys['fire'] = false;
-      this.reload = this.reloadTime;
-
-      this.board.add(new PlayerMissile(this.x,this.y+this.h/2));
-      this.board.add(new PlayerMissile(this.x+this.w,this.y+this.h/2));
-    }
-  };
-};//PlayerShip
-
-PlayerShip.prototype = new Sprite();
-PlayerShip.prototype.type = OBJECT_PLAYER;
-
-PlayerShip.prototype.hit = function(damage) {
-  if(this.board.remove(this)) {
-    loseGame();
-  }
-};
-
-//---------------------------------------------------------------------------------------------------------------------------------
-
-
-var PlayerMissile = function(x,y) {
-  this.setup('missile',{ vy: -700, damage: 10 });
-  this.x = x - this.w/2;
-  this.y = y - this.h; 
-};//PlayerMissile
-
-PlayerMissile.prototype = new Sprite();
-//PlayerMissile.prototype.type = OBJECT_PLAYER_PROJECTILE;
-
-PlayerMissile.prototype.step = function(dt)  {
-  this.y += this.vy * dt;
-  var collision = this.board.collide(this,OBJECT_ENEMY);
-  if(collision) {
-    collision.hit(this.damage);
-    this.board.remove(this);
-  } else if(this.y < -this.h) { 
-      this.board.remove(this); 
-  }
-};
-
-//---------------------------------------------------------------------------------------------------------------------------------
-
-
-var Enemy = function(blueprint,override) {
-  this.merge(this.baseParameters);
-  this.setup(blueprint.sprite,blueprint);
-  this.merge(override);
-};//Enemy
-
-Enemy.prototype = new Sprite();
-Enemy.prototype.type = OBJECT_DRINK;
-
-Enemy.prototype.baseParameters = { A: 0, B: 0, C: 0, D: 0, 
-                                   E: 0, F: 0, G: 0, H: 0,
-                                   t: 0, reloadTime: 0.75, 
-                                   reload: 0 };
-
-Enemy.prototype.step = function(dt) {
-  this.t += dt;
-
-  this.vx = this.A + this.B * Math.sin(this.C * this.t + this.D);
-  this.vy = this.E + this.F * Math.sin(this.G * this.t + this.H);
-
-  this.x += this.vx * dt;
-  this.y += this.vy * dt;
-
-  var collision = this.board.collide(this,OBJECT_PLAYER);
-  if(collision) {
-    collision.hit(this.damage);
-    this.board.remove(this);
-  }
-
-  if(Math.random() < 0.01 && this.reload <= 0) {
-    this.reload = this.reloadTime;
-    if(this.missiles == 2) {
-      this.board.add(new EnemyMissile(this.x+this.w-2,this.y+this.h));
-      this.board.add(new EnemyMissile(this.x+2,this.y+this.h));
-    } else {
-      this.board.add(new EnemyMissile(this.x+this.w/2,this.y+this.h));
-    }
-
-  }
-  this.reload-=dt;
-
-  if(this.y > Game.height ||
-     this.x < -this.w ||
-     this.x > Game.width) {
-       this.board.remove(this);
-  }
-};//step de enemigo
-
-Enemy.prototype.hit = function(damage) {
-  this.health -= damage;
-  if(this.health <=0) {
-    if(this.board.remove(this)) {
-      Game.points += this.points || 100;
-      this.board.add(new Explosion(this.x + this.w/2, 
-                                   this.y + this.h/2));
-    }
-  }
-};
-
-//---------------------------------------------------------------------------------------------------------------------------------
-
-var EnemyMissile = function(x,y) {
-  this.setup('enemy_missile',{ vy: 200, damage: 10 });
-  this.x = x - this.w/2;
-  this.y = y;
-};//EnemyMissile
-
-EnemyMissile.prototype = new Sprite();
-EnemyMissile.prototype.type = OBJECT_DEADZONE;
-
-EnemyMissile.prototype.step = function(dt)  {
-  this.y += this.vy * dt;
-  var collision = this.board.collide(this,OBJECT_PLAYER)
-  if(collision) {
-    collision.hit(this.damage);
-    this.board.remove(this);
-  } else if(this.y > Game.height) {
-      this.board.remove(this); 
-  }
-};
-
-//---------------------------------------------------------------------------------------------------------------------------------
-
-var Explosion = function(centerX,centerY) {
-  this.setup('explosion', { frame: 0 });
-  this.x = centerX - this.w/2;
-  this.y = centerY - this.h/2;
-};//Explosion
-
-Explosion.prototype = new Sprite();
-
-Explosion.prototype.step = function(dt) {
-  this.frame++;
-  if(this.frame >= 12) {
-    this.board.remove(this);
-  }
-};

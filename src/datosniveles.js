@@ -3,46 +3,58 @@ Definimos aqui distintos niveles con distintos patrones de comportamiento
 para los generadores de clientes. 
 */
 
-/*
-ideas: velocidad a la que puede ir hacia la izq el camarero, 
-	   el numero de vidas,
-	   velocidad de vuelta para la bebida vacia
-	   cantidad de tiempo que retrocede el cliente
-	   valor de las propinas
-	   puntuacion por cada cliente servido
-*/
-
-var niveles = {
+const niveles = {
 
   nivel1 : {
-  	minVelocidadCliente: 30,
-  	maxVelocidadCliente: 45,
+  	minVelocidadCliente: 15,
+  	maxVelocidadCliente: 30,
   	minClientesBarra: 1,
   	maxClientesBarra: 2,
   	minRetardo: 1,
   	maxRetardo: 5,
   	minFrecuenciaCreacion: 1,
-  	maxFrecuenciaCreacion: 5
+  	maxFrecuenciaCreacion: 5,
+    vidas: 2,
+    segundosClienteBebiendo: 3000, //en milisegundos, asi que equivale a 3 segundos
+    velocidadLateralCamarero: 10,
+    puntuacionBebidaVacia: 50,
+    puntuacionPropina: 1500,
+    puntuacionClienteServido: 50,
+    velocidadCrearBebida: 250
   },
   nivel2 : {
   	minVelocidadCliente: 30,
-  	maxVelocidadCliente: 45,
-  	minClientesBarra: 1,
-  	maxClientesBarra: 2,
+  	maxVelocidadCliente: 60,
+  	minClientesBarra: 2,
+  	maxClientesBarra: 4,
   	minRetardo: 1,
-  	maxRetardo: 5,
-  	minFrecuenciaCreacion: 1,
-  	maxFrecuenciaCreacion: 5
+  	maxRetardo: 3,
+  	minFrecuenciaCreacion: 3,
+  	maxFrecuenciaCreacion: 7.5,
+    vidas: 3,
+    segundosClienteBebiendo: 2000,
+    velocidadLateralCamarero: 20,
+    puntuacionBebidaVacia: 100,
+    puntuacionPropina: 2000,
+    puntuacionClienteServido: 200,
+    velocidadCrearBebida: 150
   },
   nivel3 : {
-  	minVelocidadCliente: 30,
-  	maxVelocidadCliente: 45,
-  	minClientesBarra: 1,
-  	maxClientesBarra: 2,
+  	minVelocidadCliente: 45,
+  	maxVelocidadCliente: 80,
+  	minClientesBarra: 4,
+  	maxClientesBarra: 6,
   	minRetardo: 1,
-  	maxRetardo: 5,
-  	minFrecuenciaCreacion: 1,
-  	maxFrecuenciaCreacion: 5
+  	maxRetardo: 1.5,
+  	minFrecuenciaCreacion: 5,
+  	maxFrecuenciaCreacion: 10,
+    vidas: 5,
+    segundosClienteBebiendo: 1000,
+    velocidadLateralCamarero: 35,
+    puntuacionBebidaVacia: 300,
+    puntuacionPropina: 3000,
+    puntuacionClienteServido: 500,
+    velocidadCrearBebida: 100
   }
 
 };
