@@ -6,14 +6,15 @@
  */
 
 /**
- * Definimos aqui distintos niveles con distintos patrones de comportamiento 
+ * Definimos aquí cada uno de los niveles 
+ * con los distintos patrones de comportamiento y dificultad 
  * para los generadores de clientes. 
  */
 
 const niveles = {
 
   nivel1 : {
-  	minVelocidadCliente: 15,
+  	minVelocidadCliente: 15, //la velocidad en el juego va en píxeles por segundo
   	maxVelocidadCliente: 30,
   	minClientesBarra: 1,
   	maxClientesBarra: 2,
@@ -22,7 +23,7 @@ const niveles = {
   	minFrecuenciaCreacion: 1,
   	maxFrecuenciaCreacion: 5,
     vidas: 2,
-    segundosClienteBebiendo: 3000, //en milisegundos, asi que equivale a 3 segundos
+    segundosClienteBebiendo: 3000, //está en milisegundos, equivale a (segundosClienteBebiendo/1000) segundos
     velocidadLateralCamarero: 10,
     puntuacionBebidaVacia: 50,
     puntuacionPropina: 1500,

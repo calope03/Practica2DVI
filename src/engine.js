@@ -31,7 +31,13 @@
 }());
 
 //---------------------------------------------------------------------------------------------------------------------------------
-  
+
+/**
+ * Constructora de la clase Metrics.
+ * Nos ayuda a medir el tiempo y, de este modo,
+ * poder hacer cálculos para representar en pantalla 
+ * los FPS y tiempo de cómputo que lleva nuestro juego (orientado a debuguear).
+ */
 var Metrics = new function(){
 
   this.startTime = 0; //desde cuando empezamos a contar
@@ -58,15 +64,20 @@ var Metrics = new function(){
     ctx.font = "15px monospace";
     ctx.fillText("fps: " + result, 0, 460);
     ctx.fillText("compTime: " + this.elapsed.toFixed(2), 0, 475);
-    //usando toFixed hay casos donde puede no redondear
-    //de forma muy precisa como con 1,5550, que da 1,55 en vez de 1,56
-  }
+    /**
+     * Usando toFixed hay casos en los que puede no redondear
+     * de forma muy precisa: con 1,5550 da 1,55 en vez de 1,56
+     */
+     
+  }//drawFPS
+
 }//Metrics
 
 //---------------------------------------------------------------------------------------------------------------------------------
 
 
-var Game = new function() {                                                                 
+var Game = new function() { 
+
   var boards = [];
 
   // Game Initialization
@@ -263,6 +274,7 @@ var TitleScreen = function TitleScreen(title,subtitle,callback) {
 };//TitleScreen
 
 //---------------------------------------------------------------------------------------------------------------------------------
+
 /**
  * Con esta pantalla de títulos se muestra el final del juego
  * cuando hemos perdido o ganado la partida.
@@ -270,6 +282,9 @@ var TitleScreen = function TitleScreen(title,subtitle,callback) {
  * Antes de crear esta pantalla ya tenemos todas las capas (GameBoard) creadas 
  * y las podamos activar y desactivar cuando es necesario (con GameManager, desde compruebaEstado())
  * De ese modo, no ejecutarań ni su método step ni su método draw.
+ * @param {string} title Texto principal para la pantalla que se va a dibujar.
+ * @param {string} subtitle Texto complementario para la pantalla que se va a dibujar .
+ * @param {function} callback Función a la que querremos llamar cuando se cumplan unas condiciones mientras dure la pantalla.
  */
 var MiTitleScreen = function MiTitleScreen(title,subtitle,callback) {
   var up = false;
@@ -313,11 +328,17 @@ var MiTitleScreen = function MiTitleScreen(title,subtitle,callback) {
 
 //---------------------------------------------------------------------------------------------------------------------------------
 
-
+/**
+ * Constructora de la clase Temporizador. 
+ * Inicializa sus atributos para medir y esperar una cantidad de tiempo.
+ * Implementa su método principal step.
+ * @param {number} tiempoAEsperar Número entero, representado en milisegundos, que indica un tiempo que se desea esperar.
+ * @param {function} callback Función a la que querremos llamar cuando se cumplan unas condiciones del temporizador.
+ */
 var Temporizador = function Temporizador(tiempoAEsperar,callback) {
   var currTime = new Date().getTime();
   var tiempoEspera = currTime+tiempoAEsperar;
-
+  
   this.step = function(dt) {
     if(currTime >= tiempoEspera){
       callback();

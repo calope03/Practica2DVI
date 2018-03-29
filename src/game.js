@@ -5,13 +5,7 @@
  * Carmen Lopez Gonzalo 
  */
 
-/*
-DUDA: En teoría (casi) todos estos datos de por aquí arriba en vez de var 
-podrían ser perfectamente const, porque no cambian durante la ejecucion.
-Lo mismo para los datos de datosniveles.js
-*/
-
-var sprites = {
+const sprites = {
  fondoPrincipal: {sx: 0, sy: 480, w: 512, h: 480,frames: 1},
  paredIzquierda: {sx: 0, sy: 0, w: 132, h: 480, frames: 1},
  camarero: { sx: 510, sy: 0, w: 55, h: 64, frames: 1 },
@@ -20,7 +14,7 @@ var sprites = {
  cliente3: { sx: 512, sy: 197, w: 32, h: 32, frames: 1 },
  cliente4: { sx: 512, sy: 230, w: 32, h: 32, frames: 1 },
  deadzone: { sx: 512, sy: 235, w: 5, h: 70, frames: 1 }, 
- //deadzone coge un trozo de imagen sin nada dibujado, es un sprite "invisible"
+ //deadzone coge un trozo de imagen sin nada dibujado, es un sprite "invisible".
  bebidaLlena: { sx: 496, sy: 106, w: 12, h: 25, frames: 1 },
  bebidaVacia: { sx: 496, sy: 138, w: 12, h: 25, frames: 1 },
  corazon: {sx: 514, sy: 264, w: 26, h: 23, frames: 1},
@@ -35,28 +29,27 @@ var sprites = {
  7: {sx: 511, sy: 293, w: 16, h: 18, frames: 1},
  8: {sx: 527, sy: 293, w: 16, h: 18, frames: 1},
  9: {sx: 543, sy: 293, w: 16, h: 18, frames: 1}
-};//sprites que usamos
+};//Los sprites que usamos.
 
-var spritesClientes = ["cliente", "cliente2", "cliente3", "cliente4"];
+const spritesClientes = ["cliente", "cliente2", "cliente3", "cliente4"];
 
-var posicionesDeadzoneIzq = [{x:90, y:50}, {x:60, y:160}, {x: 30, y: 250}, {x: -2, y: 350}];
-var posicionesDeadzoneDer = [{x:335, y:60}, {x:365, y:160}, {x: 395, y: 260}, {x: 430, y: 350}];
-var coordenadasInicioBarras = [{x:100, y:90}, {x:80, y:190}, {x: 60, y: 290}, {x: 30, y: 380}];
-var coordenadasPuntuacion= [{x: 480, y: 10}, {x: 460, y: 10}, {x: 440, y: 10}, {x:420, y:10}, {x:400, y:10}, {x:380, y:10}];
+const posicionesDeadzoneIzq = [{x:90, y:50}, {x:60, y:160}, {x: 30, y: 250}, {x: -2, y: 350}];
+const posicionesDeadzoneDer = [{x:335, y:60}, {x:365, y:160}, {x: 395, y: 260}, {x: 430, y: 350}];
+const coordenadasInicioBarras = [{x:100, y:90}, {x:80, y:190}, {x: 60, y: 290}, {x: 30, y: 380}];
+const coordenadasPuntuacion= [{x: 480, y: 10}, {x: 460, y: 10}, {x: 440, y: 10}, {x:420, y:10}, {x:400, y:10}, {x:380, y:10}];
 var coordenadasCorazon= [{x:10, y:10}];
-//como mínimo tiene que haber 1 vida, como maximo las que quepan en pantalla en cuanto a corazones
+//Como mínimo tiene que haber siempre una vida y, como máximo, las que quepan en pantalla en cuanto a dimensiones de cada corazón.
 
-var OBJECT_PLAYER = 1,
-    OBJECT_DRINK = 2,
-    OBJECT_DEADZONE = 4,
-    OBJECT_CLIENT = 8,
-    OBJECT_PROPINA = 16;
+const OBJECT_PLAYER = 1,
+      OBJECT_DRINK = 2,
+      OBJECT_DEADZONE = 4,
+      OBJECT_CLIENT = 8,
+      OBJECT_PROPINA = 16;
 
-var canvas;
 var nivelSeleccionado = "nivel1";
-//en caso de no asignarse bien, al menos cargará los datos del nivel 1 por defecto
+//En caso de no asignarse bien, al menos cargará los datos del nivel 1 por defecto.
 
-var audio_principal = new Audio('sounds/musica_fondo.mp3'); 
+const audio_principal = new Audio('sounds/musica_fondo.mp3'); 
 audio_principal.addEventListener('ended', function() {
     this.currentTime = 0;
     this.play();
@@ -350,7 +343,8 @@ var Player = function(){
 
       seHaMovido = true;
  
-      if(this.barraActual == 0){ //si está en la barra de arriba del todo
+      if(this.barraActual == 0){ 
+        //si está en la barra de arriba del todo
 
         this.x = this.posiciones[this.posiciones.length-1].x;
         this.y = this.posiciones[this.posiciones.length-1].y;
@@ -372,7 +366,8 @@ var Player = function(){
 
       seHaMovido = true;
 
-      if(this.barraActual == this.posiciones.length-1){ //si está en la barra de abajo del todo
+      if(this.barraActual == this.posiciones.length-1){ 
+        //si está en la barra de abajo del todo
 
         this.x = this.posiciones[0].x;
         this.y = this.posiciones[0].y;
@@ -438,14 +433,14 @@ var Player = function(){
 
     var objetoColisionado = this.board.collide(this,OBJECT_DRINK);
     if(objetoColisionado && this.listoParaServir) {
-      //el camarero solo puede recoger bebidas vacias estando bien colocado
+      //el camarero sólo puede recoger bebidas vacías estando bien posicionado
 
       /*Para debugueo
       console.log("cerveza es colisionada por camarero") //para comprobar que la colision es correcta
       */
 
       objetoColisionado.hit(); 
-      //esto borra la bebida (lo que ha detectado que colisiona con el camarero)
+      //esto borra la bebida (el sprite que se ha detectado que colisiona con el camarero)
 
       reproduceSonido('recoge_cerveza');
       
@@ -735,7 +730,7 @@ Propina.prototype.type = OBJECT_PROPINA;
  * @param {number} retardo Un numero entero mayor que 0 para indicar cuánto tiempo pasa desde el comienzo de la partida hasta que comienza el spawner.
  */
 var Spawner = function(numBarra, numClientes, frecuenciaCreacion, retardo){
-  this.primero = false; //para ver cuando se crea el primer cliente
+  this.primero = false; //para ver cuándo se crea el primer cliente
   this.tiempo = 0;
   this.retardo = retardo;
   this.frecuenciaCreacion = frecuenciaCreacion;
