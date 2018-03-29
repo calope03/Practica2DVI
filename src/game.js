@@ -5,6 +5,15 @@
  * Carmen Lopez Gonzalo 
  */
 
+ /*
+	OJO: haciendo pruebas para ver si todo iba bien, 
+	en alguna partida suelta me ha pasado que al recoger la ultima bebida vacia,
+	cuando supuestamente tocaba ganar e irse a la titlescreen,
+	el juego no se acababa. La musica seguía y el camarero podía seguir
+	moviendose y creando bebidas, aunque no saliesen mas clientes.
+	Con la consola abierta, no salían mensajes de error ni nada raro. Revisar por si acaso.
+ */
+
 const sprites = {
  fondoPrincipal: {sx: 0, sy: 480, w: 512, h: 480,frames: 1},
  paredIzquierda: {sx: 0, sy: 0, w: 132, h: 480, frames: 1},
