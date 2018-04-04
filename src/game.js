@@ -430,8 +430,7 @@ var Player = function(){
       if(this.listoParaServir){
         this.board.add(new Beer(this.x-12, this.y+10, niveles[nivelSeleccionado].velocidadCrearBebida, true));
 
-        reproduceSonido('sirve_cerveza');
-        GameManager.numJarrasGeneradas++;
+        GameManager.jarraServida();
       }
       
     }
@@ -455,15 +454,13 @@ var Player = function(){
       
       //this.board.remove(this); //esto borraria al camarero, pero no queremos eso!
 
-      GameManager.numJarrasGeneradas--;
-      GameManager.puntuacionActual += niveles[nivelSeleccionado].puntuacionBebidaVacia;
+      GameManager.jarraRecogida();
     }
 
     var objetoColisionado = this.board.collide(this,OBJECT_PROPINA);
     if(objetoColisionado) {
       objetoColisionado.hit(); 
-      GameManager.puntuacionActual += niveles[nivelSeleccionado].puntuacionPropina;
-      reproduceSonido('propina_recogida');
+      GameManager.propinaRecogida();
     }
 
   };//step de Player
@@ -679,8 +676,6 @@ var Client = function(x, y, vx, nombreSprite){
         */
         if(this.esDeadzoneIzq(objetoColisionado)){ //el cliente desaparece y queda servido del todo
           GameManager.servir();
-          GameManager.puntuacionActual += niveles[nivelSeleccionado].puntuacionClienteServido;
-          reproduceSonido('cliente_servido');
           if(this.dejaraPropina==1){
             this.board.add(new Propina(this.x+40, objetoColisionado.y+50));
             reproduceSonido('aparece_propina');
@@ -838,6 +833,8 @@ var GameManager = new function(){
    */
   this.servir = function(){
     this.numClientesServidos++;
+    this.puntuacionActual += niveles[nivelSeleccionado].puntuacionClienteServido;
+    reproduceSonido('cliente_servido');
   }
 
   /**
@@ -863,11 +860,43 @@ var GameManager = new function(){
    * reduce en uno el número de bebidas que ha generado el jugador para mantener una coherencia con los datos
    * de la partida. Así, permite al jugador seguir la partida pero a cambio de perder una vida.
    */
+  
   this.jarraPerdida = function(){
     this.numJarrasGeneradas--;
     this.restaVida();
   }
 
+  /**
+   * Método que, cuando se ha recoge una bebida, 
+   * reduce en uno el número de bebidas que ha generado el jugador para mantener una coherencia con los datos
+   * de la partida. Así, al final de la partida cuando el jugador recoja todas las jarras le permitirá ganar.
+   */
+
+  this.jarraRecogida = function(){
+    this.numJarrasGeneradas--;
+    this.puntuacionActual += niveles[nivelSeleccionado].puntuacionBebidaVacia;
+  }
+
+  /**
+   * Método que, cuando se recoge una propina
+   * aumenta el puntuacion segun los valores establecidos en cada nivel.
+   */
+
+  this.propinaRecogida = function(){
+    this.puntuacionActual += niveles[nivelSeleccionado].puntuacionPropina;
+    reproduceSonido('propina_recogida');
+  }
+
+  /**
+   * Método que, cuando se sirve una bebida, 
+   * aumenta en uno el número de bebidas que ha generado el jugador.
+   */
+
+  this.jarraServida = function(){
+    reproduceSonido('sirve_cerveza');
+    this.numJarrasGeneradas++;
+  }
+  
 };//GameManager
 
 //---------------------------------------------------------------------------------------------------------------------------------

@@ -281,7 +281,7 @@ var TitleScreen = function TitleScreen(title,subtitle,callback) {
  * Desde esta pantalla se puede volver a comenzar una nueva partida. 
  * Antes de crear esta pantalla ya tenemos todas las capas (GameBoard) creadas 
  * y las podamos activar y desactivar cuando es necesario (con GameManager, desde compruebaEstado())
- * De ese modo, no ejecutarań ni su método step ni su método draw.
+ * De ese modo, no ejecutarán ni su método step ni su método draw.
  * @param {string} title Texto principal para la pantalla que se va a dibujar.
  * @param {string} subtitle Texto complementario para la pantalla que se va a dibujar .
  * @param {function} callback Función a la que querremos llamar cuando se cumplan unas condiciones mientras dure la pantalla.
