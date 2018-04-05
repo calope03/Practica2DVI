@@ -1,24 +1,24 @@
 # Practica 2 DVI
 
-En este repositorio se encuentra la [practica 2](https://github.com/calope03/Practica2DVI/blob/master/practica2.pdf) de la asignatura Desarrollo de Videojuegos mediante Tecnologias Web.
+En este repositorio se encuentra la [práctica 2](https://github.com/calope03/Practica2DVI/blob/master/practica2.pdf) de la asignatura Desarrollo de Videojuegos mediante Tecnologías Web.
 
-Esta practica consiste en el desarrollo de un videojuego clasico, conocido como Tapper. Este videojuego consiste en servir cervezas a todos los clientes del bar.
+Esta práctica consiste en el desarrollo de un videojuego clásico conocido como Tapper. El objetivo de éste es servir cervezas a todos los clientes del bar.
 
-Se puede jugar una [demo del juego](http://obiot.github.io/miniTapper/). 
+Se puede probar como referencia en el desarrollo una [demo del juego](http://obiot.github.io/miniTapper/). 
 
-Tambien se puede ver un [gameplay](https://www.youtube.com/watch?v=u17mTefrodo) del juego original.
+También se puede ver un [gameplay](https://www.youtube.com/watch?v=u17mTefrodo) del juego original.
 
 ## Archivos
 
 ### [index.html](https://github.com/calope03/Practica2DVI/blob/master/index.html)
 
-En este archivo enlazamos a los archivos quqe contienen la logica del juego y cargamos el canvas, que es lo que define el tamaño de nuestro juego.
+En este archivo enlazamos a los archivos quqe contienen la lógica del juego y cargamos el canvas, que es lo que define el tamaño de nuestro juego y lo que contendrá todos los elementos que gestionamos.
 
 ### [engine.js](https://github.com/calope03/Practica2DVI/blob/master/src/engine.js)
 
-En este archivo se encuentra el motor principal del juego, es decir, el que se encarga de estar todo el tiempo dibujando los elementos de cada board.
+En este archivo se encuentra el motor principal del juego, es decir, el que se encarga de estar cada ciertos milisegundos dibujando los elementos de cada board.
 
-Para ello en la funcion loop recorremos todos los elememntos de cada board y los pinta, siempre y cuando `boards[i].activada == true`
+Para ello, en la funcion loop, recorremos todos los elementos de cada board y se pintan siempre y cuando `boards[i].activada == true`
 
 ```js
   this.loop = function() {
@@ -41,7 +41,7 @@ Para ello en la funcion loop recorremos todos los elememntos de cada board y los
   };
 ```
 
-Tambien hemos añadido una clase metrics que nos ayuda a calcular los fps y un temporizador que activa la funcion que le pasamos por parametro tras un periodo de tiempo indicado por el usuario.
+También hemos implementado la clase Metrics, que nos ayuda a calcular los FPS y mostrarlos, y la clase Temporizador que activa la función que le pasamos por parámetro tras un periodo de tiempo indicado por el usuario.
 
 ```js
 var Temporizador = function Temporizador(tiempoAEsperar,callback) {
@@ -61,11 +61,11 @@ var Temporizador = function Temporizador(tiempoAEsperar,callback) {
 
 ### [game.js](https://github.com/calope03/Practica2DVI/blob/master/src/game.js)
 
-En este archivo se crean todos los elementos del juego, el fondo, los clientes, el jugador, las cervezas, etc.
+En este archivo se crean todos los elementos del juego: el fondo, los clientes, el jugador, las bebidas, etc.
 
-Tenemos una constante ´sprites´ que contiene toda la posicion y el tamaño de cada sprite que cargamos en el juego, para luego mas tarde cogerlos de la imagen [spritesTapperAlternativos3.png](https://github.com/calope03/Practica2DVI/blob/master/img/spritesTapperAlternativos3.png).
+Tenemos una constante ´sprites´ que contiene todas la posiciones y tamaños de cada sprite que cargamos en el juego, para luego más tarde cogerlos de la imagen [spritesTapperAlternativos3.png](https://github.com/calope03/Practica2DVI/blob/master/img/spritesTapperAlternativos3.png).
 
-Hemos creado una funcion que recorre dos arrays con las posiciones en las que tiene que pintar las deadzone y las añade al board correspondiente.
+Hemos creado una función que recorre dos arrays con las posiciones en las que tiene que pintar las deadzone y las añade al board correspondiente.
 
 ```js
 var generaDeadzones = function(board){
@@ -80,19 +80,19 @@ var generaDeadzones = function(board){
 
 ### [datosniveles.js](https://github.com/calope03/Practica2DVI/blob/master/src/datosniveles.js)
 
-En este fichero se encuentra toda la informacion relativa a los niveles y que nos permite configurar los spawners.
+En este fichero se encuentra toda la información relativa a los niveles y que nos permite configurar los spawners.
 
 Para cada nivel se define:
 
-- Comportamiento en cada barra, los datos que sirven para inicializar los spawners: 
-  - Velocidad minima y maxima a la que pueden ir los clientes.
-  - Numero maximo y minimo de clientes.
-  - Minimo y maximo de la frecuencia entre la que se crean los clientes.
-- Numero de vidas por cada nivel.
-- Tiempo en el que el cliente esta bebiendo, es decir el tiempo en el que el cliente va hacia atras.
-- Velocidad a la que el camarero se puede mover de derecha a izquierda.
-- Puntos que suma cada accion, recoger propina, servir a un cliente, recoger una bebida.
-- La velocidad a la que va la bebida hacia el cliente.
+- Comportamiento en cada barra, datos que sirven para inicializar los spawners: 
+  - Velocidad mínima y máxima a la que pueden ir los clientes.
+  - Número máximo y mínimo de clientes.
+  - Mínimo y máximo de la frecuencia a la que se crean los clientes.
+- Número de vidas por cada nivel.
+- Tiempo en el que el cliente esta bebiendo, es decir, el tiempo en el que el cliente va hacia atrás.
+- Velocidad a la que el camarero se puede mover horizontalmente.
+- Puntos que suma cada acción: recoger propina, servir a un cliente y recoger una bebida.
+- La velocidad a la que va la bebida llena hacia el cliente.
   
 ```js
 nivel1 : {
@@ -115,15 +115,15 @@ nivel1 : {
 ```
 ## Partes opcionales realizadas
 
-- Vidas: inicialmente pusimos tres, pero mas adelante al hacer distintos niveles, hicimos que variara segun el nivel.
-- Puntos: actualmente tambien depende del nivel seleccionado. El tratamiento de los puntos se lleva a cabo en GameManager
-- Propinas: los clientes las dejan al salir del bar.
-- Comportamiento de los clientes: ahora los clientes al chocar con una bebida la devuelven vacia y se mueven durante un tiempo hacia atras, si en ese tiempo no han salido, vuelven a ir hacia alante.
-- Niveles: disponemos de tres niveles diferentes, cuyos datos se encuentran en el fichero [datosniveles.js](https://github.com/calope03/Practica2DVI/blob/master/src/datosniveles.js). El usuario seleccionará el nivel al principio del juego, en las siguientes rondas jugará el mismo nivel que el seleccionado inicialmente.
+- Vidas: inicialmente pusimos tres pero más adelante, al definir los distintos niveles, hicimos que variaran según el nivel.
+- Puntos: actualmente también dependen del nivel seleccionado. El tratamiento de los puntos se lleva a cabo en GameManager
+- Propinas: los clientes las dejan al ser servidos, es decr, al salir del bar.
+- Comportamiento de los clientes: ahora los clientes, al chocar con una bebida, la devuelven vacía y se mueven durante un tiempo hacia atrás. Si en ese tiempo no han salido, vuelven a moverse en dirección al jugador.
+- Niveles: disponemos de tres niveles diferentes, cuyos datos se encuentran en el fichero [datosniveles.js](https://github.com/calope03/Practica2DVI/blob/master/src/datosniveles.js). El usuario seleccionará el nivel al principio del juego y en las siguientes rondas (gane o pierda) jugará al mismo nivel que el seleccionado inicialmente.
 
 ## Nuestro juego
 
-Basandonos en el juego original y siguiendo el enunciado este es [nuestro resultado final](https://calope03.github.io/Practica2DVI/).
+Basándonos en el juego original y siguiendo el enunciado, éste es [nuestro resultado final](https://calope03.github.io/Practica2DVI/).
 
 ¡A disfrutarlo!
 
