@@ -2,7 +2,7 @@
 
 En este repositorio se encuentra la [práctica 2](https://github.com/calope03/Practica2DVI/blob/master/practica2.pdf) de la asignatura Desarrollo de Videojuegos mediante Tecnologías Web.
 
-Esta práctica consiste en el desarrollo de un videojuego clásico conocido como Tapper. El objetivo de éste es servir cervezas a todos los clientes del bar.
+Esta práctica consiste en el desarrollo de un videojuego clásico conocido como Tapper. El objetivo de éste es servir bebidas a todos los clientes del bar.
 
 Se puede probar como referencia en el desarrollo una [demo del juego](http://obiot.github.io/miniTapper/). 
 
