@@ -1,4 +1,4 @@
-# Practica 2 DVI
+# Práctica 2 DVI
 
 En este repositorio se encuentra la [práctica 2](https://github.com/calope03/Practica2DVI/blob/master/practica2.pdf) de la asignatura Desarrollo de Videojuegos mediante Tecnologías Web.
 
@@ -12,7 +12,7 @@ También se puede ver un [gameplay](https://www.youtube.com/watch?v=u17mTefrodo)
 
 ### [index.html](https://github.com/calope03/Practica2DVI/blob/master/index.html)
 
-En este archivo enlazamos a los archivos quqe contienen la lógica del juego y cargamos el canvas, que es lo que define el tamaño de nuestro juego y lo que contendrá todos los elementos que gestionamos.
+Aquí incluimos los archivos que contienen la lógica y datos del juego. También cargamos el canvas, que es lo que define el tamaño de nuestro juego y lo que contendrá todos los elementos que se pintan y que gestionamos.
 
 ### [engine.js](https://github.com/calope03/Practica2DVI/blob/master/src/engine.js)
 
@@ -41,7 +41,7 @@ Para ello, en la funcion loop, recorremos todos los elementos de cada board y se
   };
 ```
 
-También hemos implementado la clase Metrics, que nos ayuda a calcular los FPS y mostrarlos, y la clase Temporizador que activa la función que le pasamos por parámetro tras un periodo de tiempo indicado por el usuario.
+También hemos implementado la clase Metrics, que nos ayuda a calcular los FPS y mostrarlos, y la clase Temporizador que activa la función que le pasamos por parámetro tras un periodo de tiempo indicado por el usuario. La clase Metrics se ha implementado exclusivamente para debugueo durante el desarrollo del juego.
 
 ```js
 var Temporizador = function Temporizador(tiempoAEsperar,callback) {
@@ -78,7 +78,7 @@ var generaDeadzones = function(board){
 }
 ```
 
-### [datosniveles.js](https://github.com/calope03/Practica2DVI/blob/master/src/datosniveles.js)
+### [datosniveles.json](https://github.com/calope03/Practica2DVI/blob/master/src/datosniveles.json)
 
 En este fichero se encuentra toda la información relativa a los niveles y que nos permite configurar los spawners.
 
@@ -94,24 +94,8 @@ Para cada nivel se define:
 - Puntos que suma cada acción: recoger propina, servir a un cliente y recoger una bebida.
 - La velocidad a la que va la bebida llena hacia el cliente.
   
-```js
-nivel1 : {
-  	minVelocidadCliente: 15,
-  	maxVelocidadCliente: 30,
-  	minClientesBarra: 1,
-  	maxClientesBarra: 2,
-  	minRetardo: 1,
-  	maxRetardo: 5,
-  	minFrecuenciaCreacion: 1,
-  	maxFrecuenciaCreacion: 5,
-    vidas: 2,
-    segundosClienteBebiendo: 3000,
-    velocidadLateralCamarero: 10,
-    puntuacionBebidaVacia: 50,
-    puntuacionPropina: 1500,
-    puntuacionClienteServido: 50,
-    velocidadCrearBebida: 250
-  }
+```json
+datosNiveles = '[{"minVelocidadCliente": 15,"maxVelocidadCliente": 30,"minClientesBarra": 1,"maxClientesBarra": 2,"minRetardo": 1,"maxRetardo": 5,"minFrecuenciaCreacion": 1,"maxFrecuenciaCreacion": 5,"vidas": 2,"milisegundosClienteBebiendo": 3000,"velocidadLateralCamarero": 10,"puntuacionBebidaVacia": 50,"puntuacionPropina": 1500,"puntuacionClienteServido": 50,"velocidadCrearBebida": 250}, ...]';
 ```
 ## Partes opcionales realizadas
 
@@ -119,7 +103,7 @@ nivel1 : {
 - Puntos: actualmente también dependen del nivel seleccionado. El tratamiento de los puntos se lleva a cabo en GameManager
 - Propinas: los clientes las dejan al ser servidos, es decr, al salir del bar.
 - Comportamiento de los clientes: ahora los clientes, al chocar con una bebida, la devuelven vacía y se mueven durante un tiempo hacia atrás. Si en ese tiempo no han salido, vuelven a moverse en dirección al jugador.
-- Niveles: disponemos de tres niveles diferentes, cuyos datos se encuentran en el fichero [datosniveles.js](https://github.com/calope03/Practica2DVI/blob/master/src/datosniveles.js). El usuario seleccionará el nivel al principio del juego y en las siguientes rondas (gane o pierda) jugará al mismo nivel que el seleccionado inicialmente.
+- Niveles: disponemos de tres niveles diferentes, cuyos datos se encuentran en el fichero [datosniveles.json](https://github.com/calope03/Practica2DVI/blob/master/src/datosniveles.json). El usuario seleccionará mediante las teclas 1,2 ó 3 el nivel al principio del juego y, en las siguientes rondas (gane o pierda), jugará al mismo nivel que el seleccionado inicialmente.
 
 ## Nuestro juego
 

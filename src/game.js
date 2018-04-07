@@ -5,15 +5,6 @@
  * Carmen Lopez Gonzalo 
  */
 
- /*
-	OJO: haciendo pruebas para ver si todo iba bien, 
-	en alguna partida suelta me ha pasado que al recoger la ultima bebida vacia,
-	cuando supuestamente tocaba ganar e irse a la titlescreen,
-	el juego no se acababa. La musica seguía y el camarero podía seguir
-	moviendose y creando bebidas, aunque no saliesen mas clientes.
-	Con la consola abierta, no salían mensajes de error ni nada raro. Revisar por si acaso.
- */
-
 const sprites = {
  fondoPrincipal: {sx: 0, sy: 480, w: 512, h: 480,frames: 1},
  paredIzquierda: {sx: 0, sy: 0, w: 132, h: 480, frames: 1},
@@ -45,8 +36,8 @@ const spritesClientes = ["cliente", "cliente2", "cliente3", "cliente4"];
 const posicionesDeadzoneIzq = [{x:90, y:50}, {x:60, y:160}, {x: 30, y: 250}, {x: -2, y: 350}];
 const posicionesDeadzoneDer = [{x:335, y:60}, {x:365, y:160}, {x: 395, y: 260}, {x: 430, y: 350}];
 const coordenadasInicioBarras = [{x:100, y:90}, {x:80, y:190}, {x: 60, y: 290}, {x: 30, y: 380}];
-const coordenadasPuntuacion= [{x: 480, y: 10}, {x: 460, y: 10}, {x: 440, y: 10}, {x:420, y:10}, {x:400, y:10}, {x:380, y:10}];
-var coordenadasCorazon= [{x:10, y:10}];
+const coordenadasPuntuacion = [{x: 480, y: 10}, {x: 460, y: 10}, {x: 440, y: 10}, {x:420, y:10}, {x:400, y:10}, {x:380, y:10}];
+var coordenadasCorazon = [{x:10, y:10}];
 //Como mínimo tiene que haber siempre una vida y, como máximo, las que quepan en pantalla en cuanto a dimensiones de cada corazón.
 
 const OBJECT_PLAYER = 1,
@@ -55,8 +46,9 @@ const OBJECT_PLAYER = 1,
       OBJECT_CLIENT = 8,
       OBJECT_PROPINA = 16;
 
-var nivelSeleccionado = "nivel1";
-//En caso de no asignarse bien, al menos cargará los datos del nivel 1 por defecto.
+const niveles = JSON.parse(datosNiveles); //lo procesa del fichero datosniveles.json, que se incluye desde index.html
+var nivelSeleccionado = 0;
+//En caso de no asignarse bien, al menos cargará los datos del primer nivel por defecto.
 
 const audio_principal = new Audio('sounds/musica_fondo.mp3'); 
 audio_principal.addEventListener('ended', function() {
@@ -164,9 +156,9 @@ var configuraSpawners = function(board){
  */
 var playGame = function(){
 
-  if(Game.keys['1']) nivelSeleccionado = "nivel1";
-  else if(Game.keys['2']) nivelSeleccionado = "nivel2";
-  else if(Game.keys['3']) nivelSeleccionado = "nivel3";
+  if(Game.keys['1']) nivelSeleccionado = 0;
+  else if(Game.keys['2']) nivelSeleccionado = 1;
+  else if(Game.keys['3']) nivelSeleccionado = 2;
 
   Game.keys['space'] = false;
   Game.keys['1'] = false;
@@ -902,9 +894,9 @@ var GameManager = new function(){
 //---------------------------------------------------------------------------------------------------------------------------------
 
 /**
- * Estas son las primeras líneas de código JavaScript que ejecuta nuestra práctica.
+ * Éstas son las primeras líneas de código JavaScript que ejecuta nuestra práctica.
  * Por aquí se pasa sólo una vez al arrancar el juego.
- * Al cargarse la ventana del explorador se llama a a función initialize(...) de Game.
+ * Al cargarse la ventana del explorador se llama a la función initialize(...) de Game.
  */
 window.addEventListener("load", function() {
   Game.initialize("game",sprites,startGame);
